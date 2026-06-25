@@ -1,8 +1,10 @@
-import pytest
-from decimal import Decimal
 from datetime import date
+from decimal import Decimal
+
+import pytest
 from django.db import IntegrityError
-from apps.accounts.models import Client, Account, Holding, Transaction, ClientTier, AccountType, AssetClass
+
+from apps.accounts.models import Account, Client, ClientTier, Holding, Transaction
 
 
 @pytest.mark.django_db
@@ -178,16 +180,22 @@ class TestTransactionModel:
             )
 
     def test_ordering_by_trade_date_desc(self, db, account):
-        t1 = Transaction.objects.create(
-            account=account, transaction_type="BUY",
-            trade_date=date(2024, 1, 10), settlement_date=date(2024, 1, 12),
-            gross_amount=Decimal("1000"), net_amount=Decimal("1000"),
+        Transaction.objects.create(
+            account=account,
+            transaction_type="BUY",
+            trade_date=date(2024, 1, 10),
+            settlement_date=date(2024, 1, 12),
+            gross_amount=Decimal("1000"),
+            net_amount=Decimal("1000"),
             reference_number="TXN-OLD",
         )
-        t2 = Transaction.objects.create(
-            account=account, transaction_type="SELL",
-            trade_date=date(2024, 6, 15), settlement_date=date(2024, 6, 17),
-            gross_amount=Decimal("2000"), net_amount=Decimal("2000"),
+        Transaction.objects.create(
+            account=account,
+            transaction_type="SELL",
+            trade_date=date(2024, 6, 15),
+            settlement_date=date(2024, 6, 17),
+            gross_amount=Decimal("2000"),
+            net_amount=Decimal("2000"),
             reference_number="TXN-NEW",
         )
         txns = list(Transaction.objects.filter(account=account))
@@ -195,9 +203,12 @@ class TestTransactionModel:
 
     def test_nullable_quantity_and_price(self, db, account):
         t = Transaction.objects.create(
-            account=account, transaction_type="FEE",
-            trade_date=date(2024, 3, 1), settlement_date=date(2024, 3, 1),
-            gross_amount=Decimal("500"), net_amount=Decimal("500"),
+            account=account,
+            transaction_type="FEE",
+            trade_date=date(2024, 3, 1),
+            settlement_date=date(2024, 3, 1),
+            gross_amount=Decimal("500"),
+            net_amount=Decimal("500"),
             reference_number="TXN-FEE-001",
         )
         assert t.quantity is None

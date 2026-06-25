@@ -1,9 +1,10 @@
 """XYZ Platform — Client & Account Management Views."""
+
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, DetailView, CreateView, UpdateView
-from django.urls import reverse_lazy
 from django.db.models import Q, Sum
-from .models import Client, Account, Holding, Transaction
+from django.views.generic import DetailView, ListView
+
+from .models import Account, Client, Transaction
 
 
 class ClientListView(LoginRequiredMixin, ListView):
@@ -26,10 +27,11 @@ class ClientListView(LoginRequiredMixin, ListView):
         ctx = super().get_context_data(**kwargs)
         ctx["tiers"] = Client.ClientTier.choices if hasattr(Client, "ClientTier") else []
         from .models import ClientTier
+
         ctx["tiers"] = ClientTier.choices
-        ctx["total_aum"] = Client.objects.filter(is_active=True).aggregate(
-            total=Sum("accounts__market_value")
-        )["total"] or 0
+        ctx["total_aum"] = (
+            Client.objects.filter(is_active=True).aggregate(total=Sum("accounts__market_value"))["total"] or 0
+        )
         return ctx
 
 
@@ -42,9 +44,7 @@ class ClientDetailView(LoginRequiredMixin, DetailView):
         ctx = super().get_context_data(**kwargs)
         client = self.get_object()
         ctx["accounts"] = client.accounts.filter(is_active=True)
-        ctx["recent_transactions"] = Transaction.objects.filter(
-            account__client=client
-        ).order_by("-trade_date")[:20]
+        ctx["recent_transactions"] = Transaction.objects.filter(account__client=client).order_by("-trade_date")[:20]
         return ctx
 
 

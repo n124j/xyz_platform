@@ -4,11 +4,13 @@ XYZ Platform — Airflow REST API Service
 Polls the Airflow v1 API and syncs DAG run data into the
 local ETL monitor database tables via Celery periodic tasks.
 """
+
 import logging
+
 import requests
 from django.conf import settings
-from django.utils import timezone
-from .models import DAGRun, TaskInstance, PipelineAlert
+
+from .models import DAGRun, PipelineAlert
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +46,7 @@ def sync_dag_runs(dag_id: str, limit: int = 10) -> int:
         duration = None
         if run.get("start_date") and run.get("end_date"):
             from datetime import datetime
+
             start = datetime.fromisoformat(run["start_date"].replace("Z", "+00:00"))
             end = datetime.fromisoformat(run["end_date"].replace("Z", "+00:00"))
             duration = (end - start).total_seconds()

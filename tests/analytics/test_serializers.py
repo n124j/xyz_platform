@@ -1,13 +1,15 @@
-import pytest
-from decimal import Decimal
 from datetime import date
-from apps.analytics.serializers import (
-    MarketDataSerializer,
-    RiskMetricSerializer,
-    BenchmarkReturnSerializer,
-    PerformanceAttributionSerializer,
-)
+from decimal import Decimal
+
+import pytest
+
 from apps.analytics.models import PerformanceAttribution
+from apps.analytics.serializers import (
+    BenchmarkReturnSerializer,
+    MarketDataSerializer,
+    PerformanceAttributionSerializer,
+    RiskMetricSerializer,
+)
 
 
 @pytest.mark.django_db

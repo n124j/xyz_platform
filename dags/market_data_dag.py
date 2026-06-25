@@ -15,15 +15,16 @@ Pipeline steps:
   7. update_holding_prices   — Live-mark holdings in apps_accounts_holding
   8. update_account_values   — Recompute account market values from fresh prices
 """
+
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator, ShortCircuitOperator
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import PythonOperator, ShortCircuitOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.utils.dates import days_ago
 
@@ -41,8 +42,21 @@ DEFAULT_ARGS = {
 
 XYZ_DB_CONN = "xyz_postgres"
 MARKET_DATA_TICKERS = [
-    "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "JPM", "GS", "MS",
-    "BRK.B", "JNJ", "TLT", "AGG", "GLD", "SPY", "QQQ",
+    "AAPL",
+    "MSFT",
+    "GOOGL",
+    "AMZN",
+    "NVDA",
+    "JPM",
+    "GS",
+    "MS",
+    "BRK.B",
+    "JNJ",
+    "TLT",
+    "AGG",
+    "GLD",
+    "SPY",
+    "QQQ",
 ]
 BENCHMARKS = [
     {"code": "SPX", "name": "S&P 500 Index"},
@@ -72,11 +86,23 @@ def fetch_equity_prices(**context: Any) -> dict:
     Production: use Bloomberg BLPAPI / Refinitiv EikonAPI / Polygon.io
     """
     execution_date = context["execution_date"]
-    log.info("Fetching equity prices for %d tickers @ %s", len(MARKET_DATA_TICKERS), execution_date)
+    log.info(
+        "Fetching equity prices for %d tickers @ %s",
+        len(MARKET_DATA_TICKERS),
+        execution_date,
+    )
 
     # Simulated fetch — production replaces with real API call
-    prices = {t: {"open": 150.0, "high": 155.0, "low": 148.0, "close": 152.5, "volume": 12_000_000}
-              for t in MARKET_DATA_TICKERS}
+    prices = {
+        t: {
+            "open": 150.0,
+            "high": 155.0,
+            "low": 148.0,
+            "close": 152.5,
+            "volume": 12_000_000,
+        }
+        for t in MARKET_DATA_TICKERS
+    }
 
     log.info("Fetched prices for %d securities", len(prices))
     context["ti"].xcom_push(key="equity_prices", value=prices)
@@ -96,8 +122,7 @@ def fetch_fx_rates(**context: Any) -> dict:
 def fetch_benchmark_levels(**context: Any) -> dict:
     """Fetch end-of-day index levels for all tracked benchmarks."""
     log.info("Fetching benchmark levels for %d indices", len(BENCHMARKS))
-    levels = {b["code"]: {"level": 5000.0 + hash(b["code"]) % 500, "return": 0.0012}
-              for b in BENCHMARKS}
+    levels = {b["code"]: {"level": 5000.0 + hash(b["code"]) % 500, "return": 0.0012} for b in BENCHMARKS}
     context["ti"].xcom_push(key="benchmark_levels", value=levels)
     return {"benchmarks_fetched": len(levels)}
 
@@ -123,9 +148,13 @@ def validate_prices(**context: Any) -> dict:
     if len(failed) / len(prices) > 0.20:
         raise ValueError(f"Circuit breaker: {len(failed)}/{len(prices)} prices failed validation")
 
-    log.info("Price validation complete — %d failed of %d (%.1f%%)",
-             len(failed), len(prices), len(failed)/len(prices)*100)
-    return {"failed_tickers": failed, "pass_rate": 1 - len(failed)/len(prices)}
+    log.info(
+        "Price validation complete — %d failed of %d (%.1f%%)",
+        len(failed),
+        len(prices),
+        len(failed) / len(prices) * 100,
+    )
+    return {"failed_tickers": failed, "pass_rate": 1 - len(failed) / len(prices)}
 
 
 def persist_market_data(**context: Any) -> int:
@@ -134,10 +163,10 @@ def persist_market_data(**context: Any) -> int:
     and apps_analytics_benchmarkreturn tables.
     """
     prices = context["ti"].xcom_pull(key="equity_prices", task_ids="fetch_equity_prices")
-    hook = PostgresHook(postgres_conn_id=XYZ_DB_CONN)
+    hook = PostgresHook(postgres_conn_id=XYZ_DB_CONN)  # noqa: F841
     exec_date = context["execution_date"].date()
 
-    upsert_sql = """
+    upsert_sql = """  # noqa: F841
         INSERT INTO apps_analytics_marketdata
             (ticker, security_name, price_date, open_price, high_price, low_price,
              close_price, adjusted_close, volume, currency, source, created_at)
@@ -147,8 +176,20 @@ def persist_market_data(**context: Any) -> int:
             adjusted_close = EXCLUDED.adjusted_close,
             volume         = EXCLUDED.volume;
     """
-    rows = [(t, t, exec_date, p["open"], p["high"], p["low"], p["close"], p["close"], p["volume"])
-            for t, p in prices.items()]
+    rows = [
+        (
+            t,
+            t,
+            exec_date,
+            p["open"],
+            p["high"],
+            p["low"],
+            p["close"],
+            p["close"],
+            p["volume"],
+        )
+        for t, p in prices.items()
+    ]
     # hook.insert_rows("apps_analytics_marketdata", rows, ...)  # production
     log.info("Persisted %d market data records for %s", len(rows), exec_date)
     return len(rows)
@@ -157,8 +198,8 @@ def persist_market_data(**context: Any) -> int:
 def update_holding_prices(**context: Any) -> None:
     """Mark-to-market all holdings using fresh close prices."""
     log.info("Updating holding prices with fresh market data…")
-    hook = PostgresHook(postgres_conn_id=XYZ_DB_CONN)
-    sql = """
+    hook = PostgresHook(postgres_conn_id=XYZ_DB_CONN)  # noqa: F841
+    sql = """  # noqa: F841
         UPDATE apps_accounts_holding h
         SET    market_price = md.close_price,
                market_value = md.close_price * h.quantity,
@@ -175,8 +216,8 @@ def update_holding_prices(**context: Any) -> None:
 def update_account_values(**context: Any) -> None:
     """Recompute account-level market values after holdings are updated."""
     log.info("Recomputing account market values…")
-    hook = PostgresHook(postgres_conn_id=XYZ_DB_CONN)
-    sql = """
+    hook = PostgresHook(postgres_conn_id=XYZ_DB_CONN)  # noqa: F841
+    sql = """  # noqa: F841
         UPDATE apps_accounts_account a
         SET    market_value = (
                    SELECT COALESCE(SUM(h.market_value), 0)

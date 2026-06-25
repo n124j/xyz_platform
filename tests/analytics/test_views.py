@@ -1,8 +1,10 @@
-import pytest
 import json
+from datetime import date, timedelta
 from decimal import Decimal
-from datetime import date
+
+import pytest
 from django.urls import reverse
+
 from apps.analytics.models import MarketData, RiskMetric
 
 
@@ -50,7 +52,8 @@ class TestRiskMetricListView:
 
     def test_filter_by_scope(self, authenticated_client, risk_metric):
         RiskMetric.objects.create(
-            scope="ACCOUNT", reference_id="ACC-001",
+            scope="ACCOUNT",
+            reference_id="ACC-001",
             calculation_date=date(2024, 6, 20),
         )
         response = authenticated_client.get(reverse("analytics:risk_metrics") + "?scope=PORTFOLIO")
@@ -60,7 +63,8 @@ class TestRiskMetricListView:
 
     def test_no_filter_shows_all(self, authenticated_client, risk_metric):
         RiskMetric.objects.create(
-            scope="ACCOUNT", reference_id="ACC-001",
+            scope="ACCOUNT",
+            reference_id="ACC-001",
             calculation_date=date(2024, 6, 20),
         )
         response = authenticated_client.get(reverse("analytics:risk_metrics"))
@@ -100,16 +104,18 @@ class TestMarketDataAPIView:
         assert data["data"] == []
 
     def test_respects_days_parameter(self, authenticated_client):
+        today = date.today()
         for i in range(10):
             MarketData.objects.create(
-                ticker="TEST", security_name="Test",
-                price_date=date(2024, 6, 10 + i),
-                open_price=Decimal("100"), high_price=Decimal("100"),
-                low_price=Decimal("100"), close_price=Decimal("100"),
+                ticker="TEST",
+                security_name="Test",
+                price_date=today - timedelta(days=10 - i),
+                open_price=Decimal("100"),
+                high_price=Decimal("100"),
+                low_price=Decimal("100"),
+                close_price=Decimal("100"),
                 adjusted_close=Decimal("100"),
             )
-        response = authenticated_client.get(
-            reverse("analytics:market_data_api", args=["TEST"]) + "?days=365"
-        )
+        response = authenticated_client.get(reverse("analytics:market_data_api", args=["TEST"]) + "?days=365")
         data = json.loads(response.content)
         assert len(data["data"]) == 10

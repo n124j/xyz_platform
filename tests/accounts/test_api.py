@@ -1,8 +1,5 @@
 import pytest
-from decimal import Decimal
-from django.urls import reverse
 from rest_framework.test import APIClient
-from apps.accounts.models import Client, Account
 
 
 @pytest.fixture
@@ -78,15 +75,18 @@ class TestTransactionViewSet:
         assert len(response.data["results"]) == 1
 
     def test_read_only(self, api_client, account):
-        response = api_client.post("/api/v1/accounts/transactions/", {
-            "account": account.pk,
-            "transaction_type": "BUY",
-            "trade_date": "2024-01-01",
-            "settlement_date": "2024-01-03",
-            "gross_amount": "1000",
-            "net_amount": "1000",
-            "reference_number": "NEW-TXN",
-        })
+        response = api_client.post(
+            "/api/v1/accounts/transactions/",
+            {
+                "account": account.pk,
+                "transaction_type": "BUY",
+                "trade_date": "2024-01-01",
+                "settlement_date": "2024-01-03",
+                "gross_amount": "1000",
+                "net_amount": "1000",
+                "reference_number": "NEW-TXN",
+            },
+        )
         assert response.status_code == 405
 
     def test_filter_by_type(self, api_client, transaction):

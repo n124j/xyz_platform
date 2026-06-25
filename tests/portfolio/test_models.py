@@ -1,8 +1,10 @@
-import pytest
-from decimal import Decimal
 from datetime import date
+from decimal import Decimal
+
+import pytest
 from django.db import IntegrityError
-from apps.portfolio.models import PortfolioSnapshot, AssetAllocationTarget
+
+from apps.portfolio.models import AssetAllocationTarget, PortfolioSnapshot
 
 
 @pytest.mark.django_db

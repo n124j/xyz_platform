@@ -1,6 +1,6 @@
 import pytest
-from decimal import Decimal
-from apps.accounts.serializers import ClientSerializer, AccountSerializer, HoldingSerializer, TransactionSerializer
+
+from apps.accounts.serializers import AccountSerializer, ClientSerializer, HoldingSerializer, TransactionSerializer
 
 
 @pytest.mark.django_db

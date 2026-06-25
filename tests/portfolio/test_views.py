@@ -1,8 +1,10 @@
-import pytest
 import json
-from decimal import Decimal
 from datetime import date
+from decimal import Decimal
+
+import pytest
 from django.urls import reverse
+
 from apps.portfolio.models import PortfolioSnapshot
 
 
@@ -65,12 +67,9 @@ class TestPortfolioSnapshotAPIView:
         assert "ytd_return" in entry
 
     def test_series_ordered_chronologically(self, authenticated_client):
-        PortfolioSnapshot.objects.create(
-            snapshot_date=date(2024, 6, 18), total_aum=Decimal("100"))
-        PortfolioSnapshot.objects.create(
-            snapshot_date=date(2024, 6, 20), total_aum=Decimal("200"))
-        PortfolioSnapshot.objects.create(
-            snapshot_date=date(2024, 6, 19), total_aum=Decimal("150"))
+        PortfolioSnapshot.objects.create(snapshot_date=date(2024, 6, 18), total_aum=Decimal("100"))
+        PortfolioSnapshot.objects.create(snapshot_date=date(2024, 6, 20), total_aum=Decimal("200"))
+        PortfolioSnapshot.objects.create(snapshot_date=date(2024, 6, 19), total_aum=Decimal("150"))
         response = authenticated_client.get(reverse("portfolio:snapshot_api"))
         data = json.loads(response.content)
         dates = [e["date"] for e in data["series"]]

@@ -1,6 +1,8 @@
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from apps.etl_monitor.tasks import sync_all_dag_runs, XYZ_DAGS
+
+from apps.etl_monitor.tasks import XYZ_DAGS, sync_all_dag_runs
 
 
 class TestSyncAllDagRunsTask:

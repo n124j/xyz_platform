@@ -1,8 +1,10 @@
-import pytest
-from decimal import Decimal
 from datetime import date
+from decimal import Decimal
+
+import pytest
 from django.db import IntegrityError
-from apps.analytics.models import MarketData, RiskMetric, BenchmarkReturn, PerformanceAttribution
+
+from apps.analytics.models import BenchmarkReturn, MarketData, PerformanceAttribution, RiskMetric
 
 
 @pytest.mark.django_db
@@ -33,28 +35,39 @@ class TestMarketDataModel:
 
     def test_ordering_by_date_desc(self, db):
         MarketData.objects.create(
-            ticker="MSFT", security_name="Microsoft",
+            ticker="MSFT",
+            security_name="Microsoft",
             price_date=date(2024, 6, 18),
-            open_price=Decimal("400"), high_price=Decimal("410"),
-            low_price=Decimal("398"), close_price=Decimal("405"),
-            adjusted_close=Decimal("405"), volume=30000000,
+            open_price=Decimal("400"),
+            high_price=Decimal("410"),
+            low_price=Decimal("398"),
+            close_price=Decimal("405"),
+            adjusted_close=Decimal("405"),
+            volume=30000000,
         )
         MarketData.objects.create(
-            ticker="MSFT", security_name="Microsoft",
+            ticker="MSFT",
+            security_name="Microsoft",
             price_date=date(2024, 6, 20),
-            open_price=Decimal("405"), high_price=Decimal("415"),
-            low_price=Decimal("403"), close_price=Decimal("410"),
-            adjusted_close=Decimal("410"), volume=32000000,
+            open_price=Decimal("405"),
+            high_price=Decimal("415"),
+            low_price=Decimal("403"),
+            close_price=Decimal("410"),
+            adjusted_close=Decimal("410"),
+            volume=32000000,
         )
         records = list(MarketData.objects.filter(ticker="MSFT"))
         assert records[0].price_date > records[1].price_date
 
     def test_default_values(self, db):
         md = MarketData.objects.create(
-            ticker="TEST", security_name="Test",
+            ticker="TEST",
+            security_name="Test",
             price_date=date(2024, 1, 1),
-            open_price=Decimal("100"), high_price=Decimal("100"),
-            low_price=Decimal("100"), close_price=Decimal("100"),
+            open_price=Decimal("100"),
+            high_price=Decimal("100"),
+            low_price=Decimal("100"),
+            close_price=Decimal("100"),
             adjusted_close=Decimal("100"),
         )
         assert md.currency == "USD"

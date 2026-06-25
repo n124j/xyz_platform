@@ -3,9 +3,12 @@ XYZ Platform — Celery Tasks for ETL Monitor
 
 Includes scheduled periodic tasks and the ad-hoc task execution framework.
 """
+
 import logging
+
 from celery import shared_task
 from django.utils import timezone
+
 from . import services
 
 logger = logging.getLogger(__name__)
@@ -180,9 +183,10 @@ def _adhoc_sync_single_dag(params):
 
 
 def _adhoc_generate_portfolio_snapshot(params):
+    from django.db.models import Count, Sum
+
     from apps.accounts.models import Account
     from apps.portfolio.models import PortfolioSnapshot
-    from django.db.models import Sum, Count
 
     today = timezone.now().date()
     if PortfolioSnapshot.objects.filter(snapshot_date=today).exists():
@@ -195,15 +199,18 @@ def _adhoc_generate_portfolio_snapshot(params):
     )
 
     from apps.accounts.models import Client
+
     client_count = Client.objects.filter(is_active=True).count()
 
-    from apps.accounts.models import Holding
     from decimal import Decimal
+
+    from apps.accounts.models import Holding
+
     asset_values = {}
     for ac in ["EQ", "FI", "ALT", "CASH"]:
-        val = Holding.objects.filter(
-            account__is_active=True, asset_class=ac
-        ).aggregate(total=Sum("market_value"))["total"] or Decimal("0")
+        val = Holding.objects.filter(account__is_active=True, asset_class=ac).aggregate(total=Sum("market_value"))[
+            "total"
+        ] or Decimal("0")
         asset_values[ac] = val
 
     snapshot = PortfolioSnapshot.objects.create(
@@ -226,10 +233,11 @@ def _adhoc_generate_portfolio_snapshot(params):
 
 
 def _adhoc_refresh_risk_metrics(params):
-    from apps.analytics.models import RiskMetric
-    from apps.accounts.models import Account
     import random
     from decimal import Decimal
+
+    from apps.accounts.models import Account
+    from apps.analytics.models import RiskMetric
 
     lookback = int(params.get("lookback_days", 252))
     today = timezone.now().date()
@@ -261,8 +269,9 @@ def _adhoc_refresh_risk_metrics(params):
 
 
 def _adhoc_purge_old_dag_runs(params):
-    from .models import DAGRun
     from datetime import timedelta
+
+    from .models import DAGRun
 
     days = int(params.get("days", 90))
     cutoff = timezone.now() - timedelta(days=days)
@@ -281,6 +290,7 @@ def _adhoc_system_health_check(params):
 
     try:
         from django.db import connection
+
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
         checks["postgresql"] = {"status": "ok", "message": "Connection successful"}
@@ -289,6 +299,7 @@ def _adhoc_system_health_check(params):
 
     try:
         from django.core.cache import cache
+
         cache.set("health_check", "ok", 10)
         val = cache.get("health_check")
         if val == "ok":

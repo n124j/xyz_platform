@@ -1,8 +1,10 @@
 """XYZ Platform — Production Settings"""
-from .base import *  # noqa
+
+import environ
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
-import environ
+
+from .base import *  # noqa
 
 env = environ.Env()
 

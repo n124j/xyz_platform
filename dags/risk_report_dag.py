@@ -15,18 +15,19 @@ Pipeline steps:
   7. persist_risk_metrics    — Write to apps_analytics_riskmetric
   8. distribute_reports      — Email PDF risk report to relationship managers
 """
+
 from __future__ import annotations
 
 import logging
-import numpy as np
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any
 
+import numpy as np
 from airflow import DAG
-from airflow.operators.python import PythonOperator
 from airflow.operators.empty import EmptyOperator
-from airflow.sensors.external_task import ExternalTaskSensor
+from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.sensors.external_task import ExternalTaskSensor
 from airflow.utils.dates import days_ago
 
 log = logging.getLogger(__name__)
@@ -42,8 +43,8 @@ DEFAULT_ARGS = {
 }
 
 XYZ_DB_CONN = "xyz_postgres"
-RISK_FREE_RATE = 0.0525       # 5.25% — current Fed Funds rate
-LOOKBACK_DAYS = 252           # 1-year rolling window
+RISK_FREE_RATE = 0.0525  # 5.25% — current Fed Funds rate
+LOOKBACK_DAYS = 252  # 1-year rolling window
 CONFIDENCE_LEVELS = (0.90, 0.95, 0.99)
 
 STRESS_SCENARIOS = {
@@ -73,8 +74,13 @@ def compute_historical_var(**context: Any) -> dict:
             "var_usd": round(var_usd, 0),
             "cvar_pct": round(cvar_pct * 100, 4),
         }
-        log.info("Historical VaR (%d%%): %.4f%% / $%,.0f | CVaR: %.4f%%",
-                 int(cl * 100), var_pct * 100, var_usd, cvar_pct * 100)
+        log.info(
+            "Historical VaR (%d%%): %.4f%% / $%,.0f | CVaR: %.4f%%",
+            int(cl * 100),
+            var_pct * 100,
+            var_usd,
+            cvar_pct * 100,
+        )
 
     context["ti"].xcom_push(key="historical_var", value=var_results)
     return var_results
@@ -86,6 +92,7 @@ def compute_parametric_var(**context: Any) -> dict:
     Assumes multivariate normality — faster but underestimates tail risk.
     """
     from scipy import stats
+
     np.random.seed(42)
     portfolio_sigma = np.random.uniform(0.008, 0.012)
     portfolio_value = 5_000_000_000
@@ -98,8 +105,12 @@ def compute_parametric_var(**context: Any) -> dict:
             "var_pct": round(var_pct * 100, 4),
             "var_usd": round(var_pct * portfolio_value, 0),
         }
-        log.info("Parametric VaR (%d%%): %.4f%% / $%,.0f",
-                 int(cl * 100), var_pct * 100, var_pct * portfolio_value)
+        log.info(
+            "Parametric VaR (%d%%): %.4f%% / $%,.0f",
+            int(cl * 100),
+            var_pct * 100,
+            var_pct * portfolio_value,
+        )
 
     context["ti"].xcom_push(key="parametric_var", value=param_results)
     return param_results
@@ -111,9 +122,9 @@ def compute_stress_tests(**context: Any) -> dict:
     Equity shock applied to equity holdings; rate rise applied to duration-sensitive bonds.
     """
     portfolio_value = 5_000_000_000
-    equity_allocation = 0.44   # 44% — production: query from latest PortfolioSnapshot
+    equity_allocation = 0.44  # 44% — production: query from latest PortfolioSnapshot
     fi_allocation = 0.25
-    duration_years = 6.5       # portfolio effective duration
+    duration_years = 6.5  # portfolio effective duration
 
     stress_results = {}
     for scenario, params in STRESS_SCENARIOS.items():
@@ -126,8 +137,12 @@ def compute_stress_tests(**context: Any) -> dict:
             "total_loss_usd": round(total_loss, 0),
             "pct_nav": round(total_loss / portfolio_value * 100, 2),
         }
-        log.info("Stress [%s]: Total loss $%,.0f (%.2f%% NAV)",
-                 scenario, total_loss, total_loss / portfolio_value * 100)
+        log.info(
+            "Stress [%s]: Total loss $%,.0f (%.2f%% NAV)",
+            scenario,
+            total_loss,
+            total_loss / portfolio_value * 100,
+        )
 
     context["ti"].xcom_push(key="stress_results", value=stress_results)
     return stress_results
@@ -180,14 +195,14 @@ def persist_risk_metrics(**context: Any) -> None:
     """Upsert computed risk metrics into apps_analytics_riskmetric."""
     report = context["ti"].xcom_pull(key="risk_report", task_ids="build_risk_report")
     exec_date = context["execution_date"].date()
-    hook = PostgresHook(postgres_conn_id=XYZ_DB_CONN)
+    hook = PostgresHook(postgres_conn_id=XYZ_DB_CONN)  # noqa: F841
 
     hist_var = report.get("historical_var", {})
-    var_95 = hist_var.get(0.95, {}).get("var_pct")
-    var_99 = hist_var.get(0.99, {}).get("var_pct")
-    cvar_95 = hist_var.get(0.95, {}).get("cvar_pct")
+    var_95 = hist_var.get(0.95, {}).get("var_pct")  # noqa: F841
+    var_99 = hist_var.get(0.99, {}).get("var_pct")  # noqa: F841
+    cvar_95 = hist_var.get(0.95, {}).get("cvar_pct")  # noqa: F841
 
-    sql = """
+    sql = """  # noqa: F841
         INSERT INTO apps_analytics_riskmetric
             (scope, reference_id, calculation_date, var_95_1d, var_99_1d, cvar_95_1d,
              lookback_days, created_at)
@@ -244,4 +259,4 @@ with DAG(
 
     # ─── Dependencies ───────────────────────────────────────────
     start >> wait_for_etl >> [hist_var, param_var, stress, attribution]
-    [hist_var, param_var, stress, attribution] >> build_report >> persist >> distribute >> end
+    ([hist_var, param_var, stress, attribution] >> build_report >> persist >> distribute >> end)

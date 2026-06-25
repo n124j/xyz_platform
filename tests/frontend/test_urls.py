@@ -1,5 +1,4 @@
-import pytest
-from django.urls import reverse, resolve, NoReverseMatch
+from django.urls import resolve, reverse
 
 
 class TestAccountURLs:

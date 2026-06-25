@@ -1,5 +1,7 @@
 """XYZ Platform — Analytics REST API."""
-from rest_framework import viewsets, filters
+
+from rest_framework import filters, viewsets
+
 from .models import MarketData, RiskMetric
 from .serializers import MarketDataSerializer, RiskMetricSerializer
 

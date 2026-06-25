@@ -4,10 +4,12 @@ XYZ Platform — Client & Account Management Models
 Represents the core entity hierarchy:
   Client → Account → Holding → Transaction
 """
-from django.db import models
+
+from decimal import Decimal
+
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
-from decimal import Decimal
+from django.db import models
 
 
 class ClientTier(models.TextChoices):
@@ -36,6 +38,7 @@ class AssetClass(models.TextChoices):
 
 class Client(models.Model):
     """Private banking client profile."""
+
     client_id = models.CharField(max_length=20, unique=True, db_index=True)
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
@@ -77,6 +80,7 @@ class Client(models.Model):
 
 class Account(models.Model):
     """Investment account linked to a client."""
+
     account_number = models.CharField(max_length=20, unique=True, db_index=True)
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="accounts")
     account_type = models.CharField(max_length=10, choices=AccountType.choices)
@@ -84,12 +88,12 @@ class Account(models.Model):
     benchmark = models.CharField(max_length=50, default="S&P 500")
     base_currency = models.CharField(max_length=3, default="USD")
     market_value = models.DecimalField(
-        max_digits=20, decimal_places=2, default=Decimal("0.00"),
-        validators=[MinValueValidator(Decimal("0.00"))]
+        max_digits=20,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        validators=[MinValueValidator(Decimal("0.00"))],
     )
-    cash_balance = models.DecimalField(
-        max_digits=20, decimal_places=2, default=Decimal("0.00")
-    )
+    cash_balance = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0.00"))
     ytd_return = models.DecimalField(max_digits=8, decimal_places=4, default=Decimal("0.0000"))
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -104,6 +108,7 @@ class Account(models.Model):
 
 class Holding(models.Model):
     """A single position within an account."""
+
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="holdings")
     ticker = models.CharField(max_length=20, db_index=True)
     security_name = models.CharField(max_length=255)
@@ -133,6 +138,7 @@ class Holding(models.Model):
 
 class Transaction(models.Model):
     """Trade and cash flow transaction record."""
+
     class TransactionType(models.TextChoices):
         BUY = "BUY", "Buy"
         SELL = "SELL", "Sell"

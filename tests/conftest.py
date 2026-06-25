@@ -1,34 +1,34 @@
-import pytest
+from datetime import date, timedelta
 from decimal import Decimal
-from datetime import date, datetime, timedelta
+
+import pytest
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-from apps.accounts.models import Client, Account, Holding, Transaction
-from apps.portfolio.models import PortfolioSnapshot, AssetAllocationTarget
-from apps.analytics.models import MarketData, RiskMetric, BenchmarkReturn, PerformanceAttribution
-from apps.etl_monitor.models import DAGRun, TaskInstance, PipelineAlert
+from apps.accounts.models import Account, Client, Holding, Transaction
+from apps.analytics.models import BenchmarkReturn, MarketData, RiskMetric
+from apps.etl_monitor.models import DAGRun, PipelineAlert, TaskInstance
+from apps.portfolio.models import AssetAllocationTarget, PortfolioSnapshot
 
 
 @pytest.fixture
 def user(db):
-    return User.objects.create_user(
-        username="testuser", password="testpass123", email="test@xyz.com"
-    )
+    return User.objects.create_user(username="testuser", password="testpass123", email="test@xyz.com")
 
 
 @pytest.fixture
 def staff_user(db):
     return User.objects.create_user(
-        username="staffuser", password="testpass123", email="staff@xyz.com", is_staff=True
+        username="staffuser",
+        password="testpass123",
+        email="staff@xyz.com",
+        is_staff=True,
     )
 
 
 @pytest.fixture
 def superuser(db):
-    return User.objects.create_superuser(
-        username="admin", password="adminpass123", email="admin@xyz.com"
-    )
+    return User.objects.create_superuser(username="admin", password="adminpass123", email="admin@xyz.com")
 
 
 @pytest.fixture

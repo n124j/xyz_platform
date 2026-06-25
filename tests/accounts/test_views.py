@@ -1,6 +1,5 @@
 import pytest
 from django.urls import reverse
-from apps.accounts.models import Client
 
 
 @pytest.mark.django_db

@@ -1,8 +1,11 @@
 """XYZ Platform — Portfolio Dashboard Views."""
+
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
 from django.http import JsonResponse
-from apps.accounts.models import Client, Account
+from django.views.generic import TemplateView
+
+from apps.accounts.models import Account, Client
+
 from .models import PortfolioSnapshot
 
 
@@ -11,6 +14,7 @@ class PortfolioDashboardView(LoginRequiredMixin, TemplateView):
     Main landing page — embeds the Plotly Dash portfolio dashboard
     and summary KPI cards (AUM, daily P&L, YTD return, client count).
     """
+
     template_name = "portfolio/dashboard.html"
 
     def get_context_data(self, **kwargs):
@@ -25,6 +29,7 @@ class PortfolioDashboardView(LoginRequiredMixin, TemplateView):
 
 class PortfolioSnapshotAPIView(LoginRequiredMixin, TemplateView):
     """JSON series for D3.js AUM trend chart."""
+
     def get(self, request):
         days = int(request.GET.get("days", 90))
         snapshots = PortfolioSnapshot.objects.order_by("-snapshot_date")[:days]

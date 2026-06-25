@@ -1,8 +1,9 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from datetime import datetime
-from apps.etl_monitor.services import sync_dag_runs, trigger_dag, list_dags
+
 from apps.etl_monitor.models import DAGRun, PipelineAlert
+from apps.etl_monitor.services import list_dags, sync_dag_runs, trigger_dag
 
 
 @pytest.mark.django_db
@@ -51,7 +52,8 @@ class TestSyncDagRuns:
     @patch("apps.etl_monitor.services._airflow_get")
     def test_sync_upserts_existing(self, mock_get):
         DAGRun.objects.create(
-            dag_id="test_dag", dag_run_id="run-1",
+            dag_id="test_dag",
+            dag_run_id="run-1",
             state="running",
             execution_date="2024-06-20T18:30:00+00:00",
         )

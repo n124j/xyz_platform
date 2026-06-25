@@ -14,19 +14,18 @@ Pipeline steps:
   6. refresh_risk_metrics    — Trigger risk calculations (VaR, Sharpe, drawdown)
   7. notify_success          — Post completion alert to internal monitoring channel
 """
+
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator, BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import BranchPythonOperator, PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-from airflow.providers.http.sensors.http import HttpSensor
 from airflow.utils.dates import days_ago
-from airflow.models import Variable
 
 log = logging.getLogger(__name__)
 
@@ -116,10 +115,10 @@ def load_holdings(**context: Any) -> dict:
     Uses a PostgresHook transaction to ensure atomicity.
     """
     log.info("Loading holdings into xyz_platform database…")
-    hook = PostgresHook(postgres_conn_id=XYZ_DB_CONN)
+    hook = PostgresHook(postgres_conn_id=XYZ_DB_CONN)  # noqa: F841
 
     # Production: execute upsert SQL from file
-    upsert_sql = """
+    upsert_sql = """  # noqa: F841
         INSERT INTO apps_accounts_holding
             (account_id, ticker, security_name, asset_class, quantity,
              cost_basis, market_price, market_value, unrealized_pnl, weight, last_updated)
@@ -153,8 +152,8 @@ def compute_portfolio_stats(**context: Any) -> dict:
     execution_date = context["execution_date"]
     log.info("Computing portfolio snapshot for %s", execution_date.date())
 
-    hook = PostgresHook(postgres_conn_id=XYZ_DB_CONN)
-    snapshot_sql = """
+    hook = PostgresHook(postgres_conn_id=XYZ_DB_CONN)  # noqa: F841
+    snapshot_sql = """  # noqa: F841
         INSERT INTO apps_portfolio_portfoliosnapshot
             (snapshot_date, total_aum, equity_value, fixed_income_value,
              alternatives_value, cash_value, daily_pnl, daily_return_pct,
@@ -193,7 +192,6 @@ def refresh_risk_metrics(**context: Any) -> None:
     Delegated to scipy / numpy; results upserted via PostgresHook.
     """
     import numpy as np
-    from scipy import stats
 
     log.info("Computing risk metrics…")
 
@@ -202,7 +200,7 @@ def refresh_risk_metrics(**context: Any) -> None:
     returns = np.random.normal(0.0004, 0.009, 252)
 
     var_95 = float(np.percentile(returns, 5) * 100)
-    var_99 = float(np.percentile(returns, 1) * 100)
+    var_99 = float(np.percentile(returns, 1) * 100)  # noqa: F841
     ann_vol = float(returns.std() * np.sqrt(252) * 100)
     ann_ret = float(returns.mean() * 252 * 100)
     sharpe = float((ann_ret - 5.25) / ann_vol)
@@ -211,7 +209,10 @@ def refresh_risk_metrics(**context: Any) -> None:
 
     log.info(
         "Risk metrics — VaR95: %.3f%%, Vol: %.2f%%, Sharpe: %.2f, MaxDD: %.2f%%",
-        var_95, ann_vol, sharpe, max_dd,
+        var_95,
+        ann_vol,
+        sharpe,
+        max_dd,
     )
     # Production: upsert into RiskMetric table
 

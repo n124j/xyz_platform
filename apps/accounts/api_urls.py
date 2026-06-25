@@ -1,6 +1,6 @@
-from django.urls import path
 from rest_framework.routers import DefaultRouter
-from .api_views import ClientViewSet, AccountViewSet, TransactionViewSet
+
+from .api_views import AccountViewSet, ClientViewSet, TransactionViewSet
 
 router = DefaultRouter()
 router.register("clients", ClientViewSet, basename="client")

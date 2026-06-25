@@ -1,15 +1,16 @@
 """XYZ Platform — Development Settings"""
-from .base import *  # noqa
+
+from .base import *  # noqa: F401,F403
 
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
-INSTALLED_APPS += [
+INSTALLED_APPS += [  # noqa: F405
     "debug_toolbar",
     "django_extensions",
 ]
 
-MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware"] + MIDDLEWARE
+MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware"] + MIDDLEWARE  # noqa: F405
 
 INTERNAL_IPS = ["127.0.0.1"]
 

@@ -1,18 +1,18 @@
-import pytest
 import json
 from decimal import Decimal
-from datetime import date
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
+import pytest
 from django.urls import reverse
 from django.utils import timezone
+
 from apps.etl_monitor.models import AdHocTaskExecution
 from apps.etl_monitor.tasks import (
     ADHOC_TASK_REGISTRY,
-    run_adhoc_task,
-    _adhoc_sync_all_dag_runs,
-    _adhoc_sync_single_dag,
     _adhoc_generate_portfolio_snapshot,
     _adhoc_purge_old_dag_runs,
+    _adhoc_sync_all_dag_runs,
+    _adhoc_sync_single_dag,
     _adhoc_system_health_check,
 )
 
@@ -21,9 +21,12 @@ from apps.etl_monitor.tasks import (
 class TestAdHocTaskRegistry:
     def test_registry_has_all_tasks(self):
         expected = {
-            "sync_all_dag_runs", "sync_single_dag",
-            "generate_portfolio_snapshot", "refresh_risk_metrics",
-            "purge_old_dag_runs", "system_health_check",
+            "sync_all_dag_runs",
+            "sync_single_dag",
+            "generate_portfolio_snapshot",
+            "refresh_risk_metrics",
+            "purge_old_dag_runs",
+            "system_health_check",
         }
         assert set(ADHOC_TASK_REGISTRY.keys()) == expected
 
@@ -99,10 +102,8 @@ class TestAdHocTaskModel:
         assert exec_obj.duration_display == "—"
 
     def test_ordering(self, user):
-        AdHocTaskExecution.objects.create(
-            task_name="a", display_name="A", celery_task_id="order-1", triggered_by=user)
-        AdHocTaskExecution.objects.create(
-            task_name="b", display_name="B", celery_task_id="order-2", triggered_by=user)
+        AdHocTaskExecution.objects.create(task_name="a", display_name="A", celery_task_id="order-1", triggered_by=user)
+        AdHocTaskExecution.objects.create(task_name="b", display_name="B", celery_task_id="order-2", triggered_by=user)
         execs = list(AdHocTaskExecution.objects.all())
         assert execs[0].created_at >= execs[1].created_at
 
@@ -128,41 +129,53 @@ class TestAdHocTaskListView:
         assert "recent_executions" in response.context
 
     def test_post_unknown_task(self, authenticated_client):
-        response = authenticated_client.post(reverse("etl_monitor:adhoc_tasks"), {
-            "task_key": "nonexistent_task",
-        })
+        response = authenticated_client.post(
+            reverse("etl_monitor:adhoc_tasks"),
+            {
+                "task_key": "nonexistent_task",
+            },
+        )
         assert response.status_code == 302
 
-    @patch("apps.etl_monitor.views.run_adhoc_task")
+    @patch("apps.etl_monitor.tasks.run_adhoc_task")
     def test_post_valid_task(self, mock_task, authenticated_client):
         mock_task.apply_async = MagicMock()
-        response = authenticated_client.post(reverse("etl_monitor:adhoc_tasks"), {
-            "task_key": "sync_all_dag_runs",
-        })
+        response = authenticated_client.post(
+            reverse("etl_monitor:adhoc_tasks"),
+            {
+                "task_key": "sync_all_dag_runs",
+            },
+        )
         assert response.status_code == 302
         assert AdHocTaskExecution.objects.count() == 1
         mock_task.apply_async.assert_called_once()
 
-    @patch("apps.etl_monitor.views.run_adhoc_task")
+    @patch("apps.etl_monitor.tasks.run_adhoc_task")
     def test_post_with_parameters(self, mock_task, authenticated_client):
         mock_task.apply_async = MagicMock()
-        response = authenticated_client.post(reverse("etl_monitor:adhoc_tasks"), {
-            "task_key": "sync_single_dag",
-            "param_dag_id": "portfolio_etl_dag",
-            "param_limit": "10",
-        })
+        response = authenticated_client.post(
+            reverse("etl_monitor:adhoc_tasks"),
+            {
+                "task_key": "sync_single_dag",
+                "param_dag_id": "portfolio_etl_dag",
+                "param_limit": "10",
+            },
+        )
         assert response.status_code == 302
         exec_obj = AdHocTaskExecution.objects.first()
         assert exec_obj.parameters["dag_id"] == "portfolio_etl_dag"
         assert exec_obj.parameters["limit"] == 10
 
-    @patch("apps.etl_monitor.views.run_adhoc_task")
+    @patch("apps.etl_monitor.tasks.run_adhoc_task")
     def test_post_missing_required_param(self, mock_task, authenticated_client):
         mock_task.apply_async = MagicMock()
-        response = authenticated_client.post(reverse("etl_monitor:adhoc_tasks"), {
-            "task_key": "sync_single_dag",
-            "param_dag_id": "",
-        })
+        response = authenticated_client.post(
+            reverse("etl_monitor:adhoc_tasks"),
+            {
+                "task_key": "sync_single_dag",
+                "param_dag_id": "",
+            },
+        )
         assert response.status_code == 302
         assert AdHocTaskExecution.objects.count() == 0
 
@@ -171,21 +184,24 @@ class TestAdHocTaskListView:
 class TestAdHocTaskStatusView:
     def test_redirects_unauthenticated(self, client, user):
         exec_obj = AdHocTaskExecution.objects.create(
-            task_name="test", display_name="Test",
-            celery_task_id="status-test", triggered_by=user,
+            task_name="test",
+            display_name="Test",
+            celery_task_id="status-test",
+            triggered_by=user,
         )
         response = client.get(reverse("etl_monitor:adhoc_task_status", args=[exec_obj.pk]))
         assert response.status_code == 302
 
     def test_returns_json(self, authenticated_client, user):
         exec_obj = AdHocTaskExecution.objects.create(
-            task_name="test", display_name="Test Task",
-            celery_task_id="status-json", triggered_by=user,
-            status="SUCCESS", result={"count": 5},
+            task_name="test",
+            display_name="Test Task",
+            celery_task_id="status-json",
+            triggered_by=user,
+            status="SUCCESS",
+            result={"count": 5},
         )
-        response = authenticated_client.get(
-            reverse("etl_monitor:adhoc_task_status", args=[exec_obj.pk])
-        )
+        response = authenticated_client.get(reverse("etl_monitor:adhoc_task_status", args=[exec_obj.pk]))
         assert response.status_code == 200
         data = json.loads(response.content)
         assert data["status"] == "SUCCESS"
@@ -193,9 +209,7 @@ class TestAdHocTaskStatusView:
         assert data["result"] == {"count": 5}
 
     def test_404_for_nonexistent(self, authenticated_client):
-        response = authenticated_client.get(
-            reverse("etl_monitor:adhoc_task_status", args=[99999])
-        )
+        response = authenticated_client.get(reverse("etl_monitor:adhoc_task_status", args=[99999]))
         assert response.status_code == 404
 
 
@@ -230,6 +244,7 @@ class TestAdHocTaskImplementations:
 
     def test_generate_portfolio_snapshot_already_exists(self, portfolio_snapshot):
         from apps.portfolio.models import PortfolioSnapshot
+
         today = timezone.now().date()
         PortfolioSnapshot.objects.update_or_create(
             snapshot_date=today,
@@ -240,8 +255,10 @@ class TestAdHocTaskImplementations:
 
     def test_purge_old_dag_runs(self, dag_run):
         from apps.etl_monitor.models import DAGRun
+
         old_run = DAGRun.objects.create(
-            dag_id="test", dag_run_id="old-run",
+            dag_id="test",
+            dag_run_id="old-run",
             state="success",
             execution_date=timezone.now() - timezone.timedelta(days=200),
         )

@@ -4,13 +4,13 @@ XYZ Platform — Market Data & Risk Analytics Models
 Stores market prices, risk metrics (VaR, volatility, beta), and
 benchmark performance series used across Plotly Dash dashboards.
 """
+
 from django.db import models
-from django.core.validators import MinValueValidator
-from decimal import Decimal
 
 
 class MarketData(models.Model):
     """Daily OHLCV price record for a security."""
+
     ticker = models.CharField(max_length=20, db_index=True)
     security_name = models.CharField(max_length=255)
     price_date = models.DateField(db_index=True)
@@ -35,6 +35,7 @@ class MarketData(models.Model):
 
 class RiskMetric(models.Model):
     """Computed risk statistics for an account or benchmark."""
+
     class MetricScope(models.TextChoices):
         ACCOUNT = "ACCOUNT", "Account"
         PORTFOLIO = "PORTFOLIO", "Portfolio"
@@ -45,12 +46,27 @@ class RiskMetric(models.Model):
     calculation_date = models.DateField(db_index=True)
 
     # Value at Risk
-    var_95_1d = models.DecimalField(max_digits=20, decimal_places=4, null=True, blank=True,
-                                    help_text="1-day 95% VaR as % of NAV")
-    var_99_1d = models.DecimalField(max_digits=20, decimal_places=4, null=True, blank=True,
-                                    help_text="1-day 99% VaR as % of NAV")
-    cvar_95_1d = models.DecimalField(max_digits=20, decimal_places=4, null=True, blank=True,
-                                     help_text="Conditional VaR (Expected Shortfall)")
+    var_95_1d = models.DecimalField(
+        max_digits=20,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="1-day 95% VaR as % of NAV",
+    )
+    var_99_1d = models.DecimalField(
+        max_digits=20,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="1-day 99% VaR as % of NAV",
+    )
+    cvar_95_1d = models.DecimalField(
+        max_digits=20,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="Conditional VaR (Expected Shortfall)",
+    )
 
     # Return metrics
     annualised_return = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
@@ -78,6 +94,7 @@ class RiskMetric(models.Model):
 
 class BenchmarkReturn(models.Model):
     """Daily total-return index for standard benchmarks."""
+
     benchmark_code = models.CharField(max_length=20, db_index=True)
     benchmark_name = models.CharField(max_length=100)
     return_date = models.DateField()
@@ -95,6 +112,7 @@ class BenchmarkReturn(models.Model):
 
 class PerformanceAttribution(models.Model):
     """Brinson-Hood-Beebower performance attribution record."""
+
     account_number = models.CharField(max_length=20, db_index=True)
     period_start = models.DateField()
     period_end = models.DateField()

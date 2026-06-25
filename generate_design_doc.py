@@ -5,18 +5,18 @@ with flowcharts and data flow diagrams using matplotlib.
 Usage:
     python generate_design_doc.py
 """
+
 import os
-import io
+
 import matplotlib
+
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.patches import FancyBboxPatch
-from docx import Document
-from docx.shared import Inches, Pt, Cm, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.table import WD_TABLE_ALIGNMENT
-from docx.enum.section import WD_ORIENT
+import matplotlib.pyplot as plt  # noqa: E402
+from docx import Document  # noqa: E402
+from docx.enum.table import WD_TABLE_ALIGNMENT  # noqa: E402
+from docx.enum.text import WD_ALIGN_PARAGRAPH  # noqa: E402
+from docx.shared import Inches, Pt, RGBColor  # noqa: E402
+from matplotlib.patches import FancyBboxPatch  # noqa: E402
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DOCX = os.path.join(BASE_DIR, "XYZ_Platform_Design_Document.docx")
@@ -42,9 +42,23 @@ COLORS = {
 }
 
 
-def draw_rounded_box(ax, x, y, w, h, text, facecolor, edgecolor, fontsize=8, fontweight="normal", textcolor="black"):
+def draw_rounded_box(
+    ax,
+    x,
+    y,
+    w,
+    h,
+    text,
+    facecolor,
+    edgecolor,
+    fontsize=8,
+    fontweight="normal",
+    textcolor="black",
+):
     box = FancyBboxPatch(
-        (x, y), w, h,
+        (x, y),
+        w,
+        h,
         boxstyle="round,pad=0.1",
         facecolor=facecolor,
         edgecolor=edgecolor,
@@ -52,10 +66,15 @@ def draw_rounded_box(ax, x, y, w, h, text, facecolor, edgecolor, fontsize=8, fon
     )
     ax.add_patch(box)
     ax.text(
-        x + w / 2, y + h / 2, text,
-        ha="center", va="center",
-        fontsize=fontsize, fontweight=fontweight,
-        color=textcolor, wrap=True,
+        x + w / 2,
+        y + h / 2,
+        text,
+        ha="center",
+        va="center",
+        fontsize=fontsize,
+        fontweight=fontweight,
+        color=textcolor,
+        wrap=True,
     )
 
 
@@ -75,21 +94,134 @@ def generate_system_architecture_diagram():
     ax.axis("off")
     ax.set_title("System Architecture Diagram", fontsize=14, fontweight="bold", pad=20)
 
-    draw_rounded_box(ax, 4, 7, 4, 0.7, "Browser / Staff UI", COLORS["light_blue"], COLORS["blue"], fontsize=10, fontweight="bold")
+    draw_rounded_box(
+        ax,
+        4,
+        7,
+        4,
+        0.7,
+        "Browser / Staff UI",
+        COLORS["light_blue"],
+        COLORS["blue"],
+        fontsize=10,
+        fontweight="bold",
+    )
 
-    draw_rounded_box(ax, 3.5, 5.8, 5, 0.7, "Nginx (TLS + Rate Limiting)", COLORS["light_orange"], COLORS["orange"], fontsize=9, fontweight="bold")
+    draw_rounded_box(
+        ax,
+        3.5,
+        5.8,
+        5,
+        0.7,
+        "Nginx (TLS + Rate Limiting)",
+        COLORS["light_orange"],
+        COLORS["orange"],
+        fontsize=9,
+        fontweight="bold",
+    )
 
-    draw_rounded_box(ax, 0.5, 4, 2.5, 0.7, "Django Views\n(Templates)", COLORS["light_green"], COLORS["green"], fontsize=8)
-    draw_rounded_box(ax, 3.5, 4, 2.5, 0.7, "Plotly Dash\n(Embedded)", COLORS["light_purple"], COLORS["purple"], fontsize=8)
-    draw_rounded_box(ax, 6.5, 4, 2.5, 0.7, "DRF API\n(/api/v1/)", COLORS["light_blue"], COLORS["blue"], fontsize=8)
-    draw_rounded_box(ax, 9.5, 4, 2, 0.7, "Django\nChannels", COLORS["light_orange"], COLORS["orange"], fontsize=8)
+    draw_rounded_box(
+        ax,
+        0.5,
+        4,
+        2.5,
+        0.7,
+        "Django Views\n(Templates)",
+        COLORS["light_green"],
+        COLORS["green"],
+        fontsize=8,
+    )
+    draw_rounded_box(
+        ax,
+        3.5,
+        4,
+        2.5,
+        0.7,
+        "Plotly Dash\n(Embedded)",
+        COLORS["light_purple"],
+        COLORS["purple"],
+        fontsize=8,
+    )
+    draw_rounded_box(
+        ax,
+        6.5,
+        4,
+        2.5,
+        0.7,
+        "DRF API\n(/api/v1/)",
+        COLORS["light_blue"],
+        COLORS["blue"],
+        fontsize=8,
+    )
+    draw_rounded_box(
+        ax,
+        9.5,
+        4,
+        2,
+        0.7,
+        "Django\nChannels",
+        COLORS["light_orange"],
+        COLORS["orange"],
+        fontsize=8,
+    )
 
-    draw_rounded_box(ax, 3, 2.5, 6, 0.7, "PostgreSQL 16 (accounts, portfolio, analytics, etl_monitor)", COLORS["light_gray"], COLORS["gray"], fontsize=8, fontweight="bold")
+    draw_rounded_box(
+        ax,
+        3,
+        2.5,
+        6,
+        0.7,
+        "PostgreSQL 16 (accounts, portfolio, analytics, etl_monitor)",
+        COLORS["light_gray"],
+        COLORS["gray"],
+        fontsize=8,
+        fontweight="bold",
+    )
 
-    draw_rounded_box(ax, 0.5, 0.8, 2.2, 0.7, "Celery Worker\n(Tasks)", COLORS["light_green"], COLORS["green"], fontsize=7)
-    draw_rounded_box(ax, 3.2, 0.8, 2.2, 0.7, "Celery Beat\n(Scheduler)", COLORS["light_green"], COLORS["green"], fontsize=7)
-    draw_rounded_box(ax, 5.9, 0.8, 2.5, 0.7, "Airflow\n(DAGs)", COLORS["light_orange"], COLORS["orange"], fontsize=7)
-    draw_rounded_box(ax, 8.9, 0.8, 2.5, 0.7, "Redis\n(Cache + Broker)", COLORS["light_red"], COLORS["red"], fontsize=7)
+    draw_rounded_box(
+        ax,
+        0.5,
+        0.8,
+        2.2,
+        0.7,
+        "Celery Worker\n(Tasks)",
+        COLORS["light_green"],
+        COLORS["green"],
+        fontsize=7,
+    )
+    draw_rounded_box(
+        ax,
+        3.2,
+        0.8,
+        2.2,
+        0.7,
+        "Celery Beat\n(Scheduler)",
+        COLORS["light_green"],
+        COLORS["green"],
+        fontsize=7,
+    )
+    draw_rounded_box(
+        ax,
+        5.9,
+        0.8,
+        2.5,
+        0.7,
+        "Airflow\n(DAGs)",
+        COLORS["light_orange"],
+        COLORS["orange"],
+        fontsize=7,
+    )
+    draw_rounded_box(
+        ax,
+        8.9,
+        0.8,
+        2.5,
+        0.7,
+        "Redis\n(Cache + Broker)",
+        COLORS["light_red"],
+        COLORS["red"],
+        fontsize=7,
+    )
 
     draw_arrow(ax, 6, 7, 6, 6.55)
     draw_arrow(ax, 6, 5.8, 1.75, 4.75)
@@ -120,26 +252,199 @@ def generate_data_flow_diagram():
     ax.axis("off")
     ax.set_title("Data Flow Diagram", fontsize=14, fontweight="bold", pad=20)
 
-    draw_rounded_box(ax, 0.3, 7.5, 2.5, 0.8, "Market Data\nProviders", COLORS["light_orange"], COLORS["orange"], fontsize=8, fontweight="bold")
-    draw_rounded_box(ax, 4.5, 7.5, 2.5, 0.8, "Custody / OMS\nSystems", COLORS["light_orange"], COLORS["orange"], fontsize=8, fontweight="bold")
-    draw_rounded_box(ax, 8.8, 7.5, 2.5, 0.8, "Bloomberg /\nRefinitiv", COLORS["light_orange"], COLORS["orange"], fontsize=8, fontweight="bold")
+    draw_rounded_box(
+        ax,
+        0.3,
+        7.5,
+        2.5,
+        0.8,
+        "Market Data\nProviders",
+        COLORS["light_orange"],
+        COLORS["orange"],
+        fontsize=8,
+        fontweight="bold",
+    )
+    draw_rounded_box(
+        ax,
+        4.5,
+        7.5,
+        2.5,
+        0.8,
+        "Custody / OMS\nSystems",
+        COLORS["light_orange"],
+        COLORS["orange"],
+        fontsize=8,
+        fontweight="bold",
+    )
+    draw_rounded_box(
+        ax,
+        8.8,
+        7.5,
+        2.5,
+        0.8,
+        "Bloomberg /\nRefinitiv",
+        COLORS["light_orange"],
+        COLORS["orange"],
+        fontsize=8,
+        fontweight="bold",
+    )
 
-    draw_rounded_box(ax, 0.3, 5.5, 3.2, 1, "Market Data DAG\n(every 15 min)\nFetch OHLCV + FX + Benchmarks", COLORS["light_blue"], COLORS["blue"], fontsize=7)
-    draw_rounded_box(ax, 4.2, 5.5, 3.2, 1, "Portfolio ETL DAG\n(daily 18:30 ET)\nExtract/Transform/Load", COLORS["light_blue"], COLORS["blue"], fontsize=7)
-    draw_rounded_box(ax, 8.2, 5.5, 3.2, 1, "Risk Report DAG\n(daily 19:00 ET)\nVaR / Stress Tests", COLORS["light_blue"], COLORS["blue"], fontsize=7)
+    draw_rounded_box(
+        ax,
+        0.3,
+        5.5,
+        3.2,
+        1,
+        "Market Data DAG\n(every 15 min)\nFetch OHLCV + FX + Benchmarks",
+        COLORS["light_blue"],
+        COLORS["blue"],
+        fontsize=7,
+    )
+    draw_rounded_box(
+        ax,
+        4.2,
+        5.5,
+        3.2,
+        1,
+        "Portfolio ETL DAG\n(daily 18:30 ET)\nExtract/Transform/Load",
+        COLORS["light_blue"],
+        COLORS["blue"],
+        fontsize=7,
+    )
+    draw_rounded_box(
+        ax,
+        8.2,
+        5.5,
+        3.2,
+        1,
+        "Risk Report DAG\n(daily 19:00 ET)\nVaR / Stress Tests",
+        COLORS["light_blue"],
+        COLORS["blue"],
+        fontsize=7,
+    )
 
-    draw_rounded_box(ax, 0.3, 3.5, 2, 0.8, "MarketData\nTable", COLORS["light_gray"], COLORS["gray"], fontsize=7, fontweight="bold")
-    draw_rounded_box(ax, 2.8, 3.5, 2, 0.8, "Holding &\nAccount", COLORS["light_gray"], COLORS["gray"], fontsize=7, fontweight="bold")
-    draw_rounded_box(ax, 5.3, 3.5, 2, 0.8, "Portfolio\nSnapshot", COLORS["light_gray"], COLORS["gray"], fontsize=7, fontweight="bold")
-    draw_rounded_box(ax, 7.8, 3.5, 2, 0.8, "RiskMetric\nTable", COLORS["light_gray"], COLORS["gray"], fontsize=7, fontweight="bold")
-    draw_rounded_box(ax, 10.3, 3.5, 1.3, 0.8, "Benchmark\nReturn", COLORS["light_gray"], COLORS["gray"], fontsize=7, fontweight="bold")
+    draw_rounded_box(
+        ax,
+        0.3,
+        3.5,
+        2,
+        0.8,
+        "MarketData\nTable",
+        COLORS["light_gray"],
+        COLORS["gray"],
+        fontsize=7,
+        fontweight="bold",
+    )
+    draw_rounded_box(
+        ax,
+        2.8,
+        3.5,
+        2,
+        0.8,
+        "Holding &\nAccount",
+        COLORS["light_gray"],
+        COLORS["gray"],
+        fontsize=7,
+        fontweight="bold",
+    )
+    draw_rounded_box(
+        ax,
+        5.3,
+        3.5,
+        2,
+        0.8,
+        "Portfolio\nSnapshot",
+        COLORS["light_gray"],
+        COLORS["gray"],
+        fontsize=7,
+        fontweight="bold",
+    )
+    draw_rounded_box(
+        ax,
+        7.8,
+        3.5,
+        2,
+        0.8,
+        "RiskMetric\nTable",
+        COLORS["light_gray"],
+        COLORS["gray"],
+        fontsize=7,
+        fontweight="bold",
+    )
+    draw_rounded_box(
+        ax,
+        10.3,
+        3.5,
+        1.3,
+        0.8,
+        "Benchmark\nReturn",
+        COLORS["light_gray"],
+        COLORS["gray"],
+        fontsize=7,
+        fontweight="bold",
+    )
 
-    draw_rounded_box(ax, 0.3, 1.5, 2.5, 0.8, "Portfolio\nDashboard", COLORS["light_green"], COLORS["green"], fontsize=8, fontweight="bold")
-    draw_rounded_box(ax, 3.5, 1.5, 2.5, 0.8, "Risk Analytics\nDashboard", COLORS["light_green"], COLORS["green"], fontsize=8, fontweight="bold")
-    draw_rounded_box(ax, 6.7, 1.5, 2.5, 0.8, "Client &\nAccount Views", COLORS["light_green"], COLORS["green"], fontsize=8, fontweight="bold")
-    draw_rounded_box(ax, 9.8, 1.5, 1.8, 0.8, "REST\nAPI", COLORS["light_green"], COLORS["green"], fontsize=8, fontweight="bold")
+    draw_rounded_box(
+        ax,
+        0.3,
+        1.5,
+        2.5,
+        0.8,
+        "Portfolio\nDashboard",
+        COLORS["light_green"],
+        COLORS["green"],
+        fontsize=8,
+        fontweight="bold",
+    )
+    draw_rounded_box(
+        ax,
+        3.5,
+        1.5,
+        2.5,
+        0.8,
+        "Risk Analytics\nDashboard",
+        COLORS["light_green"],
+        COLORS["green"],
+        fontsize=8,
+        fontweight="bold",
+    )
+    draw_rounded_box(
+        ax,
+        6.7,
+        1.5,
+        2.5,
+        0.8,
+        "Client &\nAccount Views",
+        COLORS["light_green"],
+        COLORS["green"],
+        fontsize=8,
+        fontweight="bold",
+    )
+    draw_rounded_box(
+        ax,
+        9.8,
+        1.5,
+        1.8,
+        0.8,
+        "REST\nAPI",
+        COLORS["light_green"],
+        COLORS["green"],
+        fontsize=8,
+        fontweight="bold",
+    )
 
-    draw_rounded_box(ax, 4, 0, 4, 0.7, "Browser / Staff Users", COLORS["light_blue"], COLORS["blue"], fontsize=9, fontweight="bold")
+    draw_rounded_box(
+        ax,
+        4,
+        0,
+        4,
+        0.7,
+        "Browser / Staff Users",
+        COLORS["light_blue"],
+        COLORS["blue"],
+        fontsize=9,
+        fontweight="bold",
+    )
 
     draw_arrow(ax, 1.55, 7.5, 1.55, 6.55)
     draw_arrow(ax, 5.75, 7.5, 5.75, 6.55)
@@ -164,10 +469,42 @@ def generate_data_flow_diagram():
     draw_arrow(ax, 7.95, 1.5, 6.5, 0.75)
     draw_arrow(ax, 10.7, 1.5, 7, 0.75)
 
-    ax.text(6, 8.7, "EXTERNAL SOURCES", fontsize=9, fontweight="bold", ha="center", color=COLORS["orange"])
-    ax.text(6, 6.9, "AIRFLOW ETL PIPELINES", fontsize=9, fontweight="bold", ha="center", color=COLORS["blue"])
-    ax.text(6, 4.7, "POSTGRESQL DATA STORES", fontsize=9, fontweight="bold", ha="center", color=COLORS["gray"])
-    ax.text(6, 2.7, "DJANGO PRESENTATION LAYER", fontsize=9, fontweight="bold", ha="center", color=COLORS["green"])
+    ax.text(
+        6,
+        8.7,
+        "EXTERNAL SOURCES",
+        fontsize=9,
+        fontweight="bold",
+        ha="center",
+        color=COLORS["orange"],
+    )
+    ax.text(
+        6,
+        6.9,
+        "AIRFLOW ETL PIPELINES",
+        fontsize=9,
+        fontweight="bold",
+        ha="center",
+        color=COLORS["blue"],
+    )
+    ax.text(
+        6,
+        4.7,
+        "POSTGRESQL DATA STORES",
+        fontsize=9,
+        fontweight="bold",
+        ha="center",
+        color=COLORS["gray"],
+    )
+    ax.text(
+        6,
+        2.7,
+        "DJANGO PRESENTATION LAYER",
+        fontsize=9,
+        fontweight="bold",
+        ha="center",
+        color=COLORS["green"],
+    )
 
     path = os.path.join(IMG_DIR, "data_flow_diagram.png")
     plt.tight_layout()
@@ -203,7 +540,14 @@ def generate_etl_flowchart():
         if i > 0:
             draw_arrow(ax, 2, y + 0.75 + 0.4, 2, y + 0.7)
 
-    ax.text(3.5, 9 - 2 * 1.1 + 0.35, "FAIL", fontsize=7, color=COLORS["red"], fontweight="bold")
+    ax.text(
+        3.5,
+        9 - 2 * 1.1 + 0.35,
+        "FAIL",
+        fontsize=7,
+        color=COLORS["red"],
+        fontweight="bold",
+    )
 
     ax = axes[1]
     ax.set_title("Market Data DAG\n(Every 15 min)", fontsize=9, fontweight="bold")
@@ -259,7 +603,9 @@ def generate_er_diagram():
 
     def draw_entity(ax_obj, x, y, w, h, title, fields, color, edge):
         box = FancyBboxPatch(
-            (x, y), w, h,
+            (x, y),
+            w,
+            h,
             boxstyle="round,pad=0.05",
             facecolor=color,
             edgecolor=edge,
@@ -267,96 +613,292 @@ def generate_er_diagram():
         )
         ax_obj.add_patch(box)
         header_box = FancyBboxPatch(
-            (x, y + h - 0.45), w, 0.45,
+            (x, y + h - 0.45),
+            w,
+            0.45,
             boxstyle="round,pad=0.05",
             facecolor=edge,
             edgecolor=edge,
             linewidth=1,
         )
         ax_obj.add_patch(header_box)
-        ax_obj.text(x + w / 2, y + h - 0.22, title, ha="center", va="center",
-                    fontsize=8, fontweight="bold", color="white")
+        ax_obj.text(
+            x + w / 2,
+            y + h - 0.22,
+            title,
+            ha="center",
+            va="center",
+            fontsize=8,
+            fontweight="bold",
+            color="white",
+        )
         for i, field in enumerate(fields):
-            ax_obj.text(x + 0.1, y + h - 0.65 - i * 0.22, field, fontsize=6, color=COLORS["black"])
+            ax_obj.text(
+                x + 0.1,
+                y + h - 0.65 - i * 0.22,
+                field,
+                fontsize=6,
+                color=COLORS["black"],
+            )
 
-    draw_entity(ax, 0.2, 7, 2.8, 2.5, "User (auth_user)",
-                ["id (PK)", "username", "email", "is_staff", "is_superuser"],
-                COLORS["light_gray"], COLORS["gray"])
+    draw_entity(
+        ax,
+        0.2,
+        7,
+        2.8,
+        2.5,
+        "User (auth_user)",
+        ["id (PK)", "username", "email", "is_staff", "is_superuser"],
+        COLORS["light_gray"],
+        COLORS["gray"],
+    )
 
-    draw_entity(ax, 4, 6.5, 3, 3, "Client",
-                ["id (PK)", "client_id (UK)", "name", "email (UK)", "tier", "risk_profile",
-                 "relationship_manager (FK)", "kyc_verified", "onboarded_date", "is_active"],
-                COLORS["light_blue"], COLORS["blue"])
+    draw_entity(
+        ax,
+        4,
+        6.5,
+        3,
+        3,
+        "Client",
+        [
+            "id (PK)",
+            "client_id (UK)",
+            "name",
+            "email (UK)",
+            "tier",
+            "risk_profile",
+            "relationship_manager (FK)",
+            "kyc_verified",
+            "onboarded_date",
+            "is_active",
+        ],
+        COLORS["light_blue"],
+        COLORS["blue"],
+    )
 
-    draw_entity(ax, 8.5, 6.5, 3, 2.5, "Account",
-                ["id (PK)", "account_number (UK)", "client (FK)", "account_type",
-                 "market_value", "cash_balance", "ytd_return", "is_active"],
-                COLORS["light_blue"], COLORS["blue"])
+    draw_entity(
+        ax,
+        8.5,
+        6.5,
+        3,
+        2.5,
+        "Account",
+        [
+            "id (PK)",
+            "account_number (UK)",
+            "client (FK)",
+            "account_type",
+            "market_value",
+            "cash_balance",
+            "ytd_return",
+            "is_active",
+        ],
+        COLORS["light_blue"],
+        COLORS["blue"],
+    )
 
-    draw_entity(ax, 0.2, 3.5, 2.8, 2.5, "Holding",
-                ["id (PK)", "account (FK)", "ticker", "asset_class",
-                 "quantity", "cost_basis", "market_price",
-                 "market_value", "unrealized_pnl"],
-                COLORS["light_green"], COLORS["green"])
+    draw_entity(
+        ax,
+        0.2,
+        3.5,
+        2.8,
+        2.5,
+        "Holding",
+        [
+            "id (PK)",
+            "account (FK)",
+            "ticker",
+            "asset_class",
+            "quantity",
+            "cost_basis",
+            "market_price",
+            "market_value",
+            "unrealized_pnl",
+        ],
+        COLORS["light_green"],
+        COLORS["green"],
+    )
 
-    draw_entity(ax, 3.5, 3.5, 3, 2.5, "Transaction",
-                ["id (PK)", "account (FK)", "transaction_type", "ticker",
-                 "trade_date", "settlement_date",
-                 "gross_amount", "fees", "net_amount", "reference_number (UK)"],
-                COLORS["light_green"], COLORS["green"])
+    draw_entity(
+        ax,
+        3.5,
+        3.5,
+        3,
+        2.5,
+        "Transaction",
+        [
+            "id (PK)",
+            "account (FK)",
+            "transaction_type",
+            "ticker",
+            "trade_date",
+            "settlement_date",
+            "gross_amount",
+            "fees",
+            "net_amount",
+            "reference_number (UK)",
+        ],
+        COLORS["light_green"],
+        COLORS["green"],
+    )
 
-    draw_entity(ax, 7, 3.5, 2.8, 2, "PortfolioSnapshot",
-                ["id (PK)", "snapshot_date (UK)", "total_aum",
-                 "equity_value", "fi_value", "daily_pnl", "ytd_return"],
-                COLORS["light_purple"], COLORS["purple"])
+    draw_entity(
+        ax,
+        7,
+        3.5,
+        2.8,
+        2,
+        "PortfolioSnapshot",
+        [
+            "id (PK)",
+            "snapshot_date (UK)",
+            "total_aum",
+            "equity_value",
+            "fi_value",
+            "daily_pnl",
+            "ytd_return",
+        ],
+        COLORS["light_purple"],
+        COLORS["purple"],
+    )
 
-    draw_entity(ax, 10.3, 3.5, 3.2, 2.3, "RiskMetric",
-                ["id (PK)", "scope", "reference_id",
-                 "calculation_date", "var_95_1d", "sharpe_ratio",
-                 "max_drawdown", "beta", "alpha"],
-                COLORS["light_orange"], COLORS["orange"])
+    draw_entity(
+        ax,
+        10.3,
+        3.5,
+        3.2,
+        2.3,
+        "RiskMetric",
+        [
+            "id (PK)",
+            "scope",
+            "reference_id",
+            "calculation_date",
+            "var_95_1d",
+            "sharpe_ratio",
+            "max_drawdown",
+            "beta",
+            "alpha",
+        ],
+        COLORS["light_orange"],
+        COLORS["orange"],
+    )
 
-    draw_entity(ax, 0.2, 0.5, 2.8, 2.2, "MarketData",
-                ["id (PK)", "ticker", "price_date",
-                 "open/high/low/close", "volume",
-                 "UK: (ticker, price_date)"],
-                COLORS["light_orange"], COLORS["orange"])
+    draw_entity(
+        ax,
+        0.2,
+        0.5,
+        2.8,
+        2.2,
+        "MarketData",
+        [
+            "id (PK)",
+            "ticker",
+            "price_date",
+            "open/high/low/close",
+            "volume",
+            "UK: (ticker, price_date)",
+        ],
+        COLORS["light_orange"],
+        COLORS["orange"],
+    )
 
-    draw_entity(ax, 3.5, 0.5, 3, 2.2, "DAGRun",
-                ["id (PK)", "dag_id", "dag_run_id (UK)",
-                 "state", "execution_date", "duration_seconds"],
-                COLORS["light_red"], COLORS["red"])
+    draw_entity(
+        ax,
+        3.5,
+        0.5,
+        3,
+        2.2,
+        "DAGRun",
+        [
+            "id (PK)",
+            "dag_id",
+            "dag_run_id (UK)",
+            "state",
+            "execution_date",
+            "duration_seconds",
+        ],
+        COLORS["light_red"],
+        COLORS["red"],
+    )
 
-    draw_entity(ax, 7, 0.5, 2.8, 2.2, "TaskInstance",
-                ["id (PK)", "dag_run (FK)", "task_id",
-                 "state", "duration_seconds",
-                 "UK: (dag_run, task_id)"],
-                COLORS["light_red"], COLORS["red"])
+    draw_entity(
+        ax,
+        7,
+        0.5,
+        2.8,
+        2.2,
+        "TaskInstance",
+        [
+            "id (PK)",
+            "dag_run (FK)",
+            "task_id",
+            "state",
+            "duration_seconds",
+            "UK: (dag_run, task_id)",
+        ],
+        COLORS["light_red"],
+        COLORS["red"],
+    )
 
-    draw_entity(ax, 10.3, 0.5, 3.2, 2.2, "PipelineAlert",
-                ["id (PK)", "dag_run (FK, null)",
-                 "dag_id", "severity", "message",
-                 "acknowledged", "acknowledged_by (FK)"],
-                COLORS["light_red"], COLORS["red"])
+    draw_entity(
+        ax,
+        10.3,
+        0.5,
+        3.2,
+        2.2,
+        "PipelineAlert",
+        [
+            "id (PK)",
+            "dag_run (FK, null)",
+            "dag_id",
+            "severity",
+            "message",
+            "acknowledged",
+            "acknowledged_by (FK)",
+        ],
+        COLORS["light_red"],
+        COLORS["red"],
+    )
 
-    ax.annotate("", xy=(4, 8), xytext=(3, 8),
-                arrowprops=dict(arrowstyle="->", color=COLORS["gray"], lw=1.5))
+    ax.annotate(
+        "",
+        xy=(4, 8),
+        xytext=(3, 8),
+        arrowprops=dict(arrowstyle="->", color=COLORS["gray"], lw=1.5),
+    )
     ax.text(3.3, 8.15, "RM", fontsize=6, color=COLORS["gray"])
 
-    ax.annotate("", xy=(8.5, 8), xytext=(7, 8),
-                arrowprops=dict(arrowstyle="->", color=COLORS["blue"], lw=1.5))
+    ax.annotate(
+        "",
+        xy=(8.5, 8),
+        xytext=(7, 8),
+        arrowprops=dict(arrowstyle="->", color=COLORS["blue"], lw=1.5),
+    )
     ax.text(7.5, 8.15, "1:N", fontsize=6, color=COLORS["blue"])
 
-    ax.annotate("", xy=(1.6, 6), xytext=(9, 6.5),
-                arrowprops=dict(arrowstyle="->", color=COLORS["green"], lw=1.5))
+    ax.annotate(
+        "",
+        xy=(1.6, 6),
+        xytext=(9, 6.5),
+        arrowprops=dict(arrowstyle="->", color=COLORS["green"], lw=1.5),
+    )
     ax.text(5, 6.35, "1:N", fontsize=6, color=COLORS["green"])
 
-    ax.annotate("", xy=(5, 6), xytext=(9.5, 6.5),
-                arrowprops=dict(arrowstyle="->", color=COLORS["green"], lw=1.5))
+    ax.annotate(
+        "",
+        xy=(5, 6),
+        xytext=(9.5, 6.5),
+        arrowprops=dict(arrowstyle="->", color=COLORS["green"], lw=1.5),
+    )
     ax.text(7.5, 6.1, "1:N", fontsize=6, color=COLORS["green"])
 
-    ax.annotate("", xy=(8.4, 1.6), xytext=(6.5, 1.6),
-                arrowprops=dict(arrowstyle="->", color=COLORS["red"], lw=1.5))
+    ax.annotate(
+        "",
+        xy=(8.4, 1.6),
+        xytext=(6.5, 1.6),
+        arrowprops=dict(arrowstyle="->", color=COLORS["red"], lw=1.5),
+    )
     ax.text(7.2, 1.75, "1:N", fontsize=6, color=COLORS["red"])
 
     path = os.path.join(IMG_DIR, "er_diagram.png")
@@ -398,10 +940,38 @@ def generate_request_flow_diagram():
         (9.4, "SQL"),
     ]
     for x, label in labels:
-        ax.text(x, 3.7, label, fontsize=7, ha="center", color=COLORS["gray"], fontstyle="italic")
+        ax.text(
+            x,
+            3.7,
+            label,
+            fontsize=7,
+            ha="center",
+            color=COLORS["gray"],
+            fontstyle="italic",
+        )
 
-    draw_rounded_box(ax, 6.2, 0.8, 1.6, 0.8, "Plotly Dash\n(iframe)", COLORS["light_purple"], COLORS["purple"], fontsize=7)
-    draw_rounded_box(ax, 8.2, 0.8, 1.6, 0.8, "Redis\n(Cache)", COLORS["light_red"], COLORS["red"], fontsize=7)
+    draw_rounded_box(
+        ax,
+        6.2,
+        0.8,
+        1.6,
+        0.8,
+        "Plotly Dash\n(iframe)",
+        COLORS["light_purple"],
+        COLORS["purple"],
+        fontsize=7,
+    )
+    draw_rounded_box(
+        ax,
+        8.2,
+        0.8,
+        1.6,
+        0.8,
+        "Redis\n(Cache)",
+        COLORS["light_red"],
+        COLORS["red"],
+        fontsize=7,
+    )
     draw_arrow(ax, 7, 2.5, 7, 1.65)
     draw_arrow(ax, 9, 2.5, 9, 1.65)
 
@@ -415,6 +985,7 @@ def generate_request_flow_diagram():
 def set_cell_shading(cell, color_hex):
     from docx.oxml.ns import qn
     from lxml import etree
+
     shading = etree.SubElement(cell._element.get_or_add_tcPr(), qn("w:shd"))
     shading.set(qn("w:fill"), color_hex.replace("#", ""))
     shading.set(qn("w:val"), "clear")
@@ -487,13 +1058,20 @@ def build_docx(arch_img, dfd_img, etl_img, er_img, req_img):
     doc.add_paragraph("")
     doc.add_paragraph("")
 
-    add_styled_table(doc, ["Field", "Value"], [
-        ["Version", "1.0"],
-        ["Date", "2026-06-24"],
-        ["Stack", "Django 4.2 | PostgreSQL 16 | Redis 7 | Celery 5 | Airflow 2.9 | Plotly Dash"],
-        ["Status", "Active Development"],
-        ["Classification", "Confidential & Proprietary"],
-    ])
+    add_styled_table(
+        doc,
+        ["Field", "Value"],
+        [
+            ["Version", "1.0"],
+            ["Date", "2026-06-24"],
+            [
+                "Stack",
+                "Django 4.2 | PostgreSQL 16 | Redis 7 | Celery 5 | Airflow 2.9 | Plotly Dash",
+            ],
+            ["Status", "Active Development"],
+            ["Classification", "Confidential & Proprietary"],
+        ],
+    )
 
     doc.add_page_break()
 
@@ -529,28 +1107,39 @@ def build_docx(arch_img, dfd_img, etl_img, er_img, req_img):
     )
 
     doc.add_heading("1.2 Users", level=2)
-    add_styled_table(doc, ["Role", "Access Level"], [
-        ["Superuser (admin)", "Full Django admin, all views, DAG triggering"],
-        ["Staff (relationship managers)", "Client views, portfolio dashboard, analytics"],
-        ["Read-only analysts", "Dashboards and risk metric views"],
-    ])
+    add_styled_table(
+        doc,
+        ["Role", "Access Level"],
+        [
+            ["Superuser (admin)", "Full Django admin, all views, DAG triggering"],
+            [
+                "Staff (relationship managers)",
+                "Client views, portfolio dashboard, analytics",
+            ],
+            ["Read-only analysts", "Dashboards and risk metric views"],
+        ],
+    )
 
     doc.add_heading("1.3 Technology Stack", level=2)
-    add_styled_table(doc, ["Layer", "Technology"], [
-        ["Web Framework", "Django 4.2.13"],
-        ["API", "Django REST Framework 3.15"],
-        ["Database", "PostgreSQL 16"],
-        ["Cache / Broker", "Redis 7"],
-        ["Task Queue", "Celery 5.4 + django-celery-beat"],
-        ["Orchestration", "Apache Airflow 2.9.2 (LocalExecutor)"],
-        ["Dashboards", "Plotly Dash 2.17 via django-plotly-dash"],
-        ["WebSockets", "Django Channels 4.1 + channels-redis"],
-        ["Static Files", "WhiteNoise 6.7"],
-        ["Containerization", "Docker Compose"],
-        ["Reverse Proxy", "Nginx (TLS, rate limiting)"],
-        ["CI/CD", "GitHub Actions"],
-        ["Error Tracking", "Sentry (production)"],
-    ])
+    add_styled_table(
+        doc,
+        ["Layer", "Technology"],
+        [
+            ["Web Framework", "Django 4.2.13"],
+            ["API", "Django REST Framework 3.15"],
+            ["Database", "PostgreSQL 16"],
+            ["Cache / Broker", "Redis 7"],
+            ["Task Queue", "Celery 5.4 + django-celery-beat"],
+            ["Orchestration", "Apache Airflow 2.9.2 (LocalExecutor)"],
+            ["Dashboards", "Plotly Dash 2.17 via django-plotly-dash"],
+            ["WebSockets", "Django Channels 4.1 + channels-redis"],
+            ["Static Files", "WhiteNoise 6.7"],
+            ["Containerization", "Docker Compose"],
+            ["Reverse Proxy", "Nginx (TLS, rate limiting)"],
+            ["CI/CD", "GitHub Actions"],
+            ["Error Tracking", "Sentry (production)"],
+        ],
+    )
 
     doc.add_page_break()
 
@@ -598,43 +1187,85 @@ def build_docx(arch_img, dfd_img, etl_img, er_img, req_img):
         "Core entity hierarchy: Client -> Account -> Holding / Transaction. "
         "Provides list/detail views for clients and accounts, plus full CRUD via DRF API."
     )
-    add_styled_table(doc, ["URL Pattern", "View", "Purpose"], [
-        ["/clients/", "ClientListView", "List active clients, filter by name/tier"],
-        ["/clients/<pk>/", "ClientDetailView", "Client profile + accounts + recent transactions"],
-        ["/clients/account/<num>/", "AccountDetailView", "Holdings and transaction history"],
-    ])
+    add_styled_table(
+        doc,
+        ["URL Pattern", "View", "Purpose"],
+        [
+            ["/clients/", "ClientListView", "List active clients, filter by name/tier"],
+            [
+                "/clients/<pk>/",
+                "ClientDetailView",
+                "Client profile + accounts + recent transactions",
+            ],
+            [
+                "/clients/account/<num>/",
+                "AccountDetailView",
+                "Holdings and transaction history",
+            ],
+        ],
+    )
 
     doc.add_heading("4.2 Portfolio App", level=2)
-    doc.add_paragraph(
-        "Aggregated portfolio metrics with daily AUM snapshots. Main landing page embeds Plotly Dash."
+    doc.add_paragraph("Aggregated portfolio metrics with daily AUM snapshots. Main landing page embeds Plotly Dash.")
+    add_styled_table(
+        doc,
+        ["URL Pattern", "View", "Purpose"],
+        [
+            [
+                "/ and /dashboard/",
+                "PortfolioDashboardView",
+                "KPI cards + Plotly Dash iframe",
+            ],
+            [
+                "/api/snapshot/",
+                "PortfolioSnapshotAPIView",
+                "JSON AUM trend data (default 90 days)",
+            ],
+        ],
     )
-    add_styled_table(doc, ["URL Pattern", "View", "Purpose"], [
-        ["/ and /dashboard/", "PortfolioDashboardView", "KPI cards + Plotly Dash iframe"],
-        ["/api/snapshot/", "PortfolioSnapshotAPIView", "JSON AUM trend data (default 90 days)"],
-    ])
 
     doc.add_heading("4.3 Analytics App", level=2)
     doc.add_paragraph(
         "Market data storage and risk metric computation. Provides dashboards for VaR, Sharpe, "
         "drawdown, and correlation analysis."
     )
-    add_styled_table(doc, ["URL Pattern", "View", "Purpose"], [
-        ["/analytics/", "AnalyticsDashboardView", "Risk KPI cards + Plotly Dash iframe"],
-        ["/analytics/risk/", "RiskMetricListView", "Paginated risk metrics"],
-        ["/analytics/market-data/<ticker>/", "MarketDataAPIView", "OHLCV JSON for a ticker"],
-    ])
+    add_styled_table(
+        doc,
+        ["URL Pattern", "View", "Purpose"],
+        [
+            [
+                "/analytics/",
+                "AnalyticsDashboardView",
+                "Risk KPI cards + Plotly Dash iframe",
+            ],
+            ["/analytics/risk/", "RiskMetricListView", "Paginated risk metrics"],
+            [
+                "/analytics/market-data/<ticker>/",
+                "MarketDataAPIView",
+                "OHLCV JSON for a ticker",
+            ],
+        ],
+    )
 
     doc.add_heading("4.4 ETL Monitor App", level=2)
     doc.add_paragraph(
         "Airflow pipeline monitoring with DAG run history, failure alerting, and manual trigger support. "
         "Celery tasks sync Airflow state every 5 minutes."
     )
-    add_styled_table(doc, ["URL Pattern", "View", "Purpose"], [
-        ["/etl/", "ETLDashboardView", "Latest DAG runs + unacknowledged alerts"],
-        ["/etl/runs/", "DAGRunListView", "Paginated DAG run history"],
-        ["/etl/trigger/<dag_id>/", "TriggerDAGView", "POST to trigger a DAG (permission required)"],
-        ["/etl/api/alerts/", "PipelineAlertsAPIView", "JSON unacknowledged alerts"],
-    ])
+    add_styled_table(
+        doc,
+        ["URL Pattern", "View", "Purpose"],
+        [
+            ["/etl/", "ETLDashboardView", "Latest DAG runs + unacknowledged alerts"],
+            ["/etl/runs/", "DAGRunListView", "Paginated DAG run history"],
+            [
+                "/etl/trigger/<dag_id>/",
+                "TriggerDAGView",
+                "POST to trigger a DAG (permission required)",
+            ],
+            ["/etl/api/alerts/", "PipelineAlertsAPIView", "JSON unacknowledged alerts"],
+        ],
+    )
 
     doc.add_page_break()
 
@@ -646,27 +1277,42 @@ def build_docx(arch_img, dfd_img, etl_img, er_img, req_img):
     last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     doc.add_heading("5.2 Key Enumerations", level=2)
-    add_styled_table(doc, ["Field", "Values"], [
-        ["Client.tier", "UHNW, HNW, MA, INST"],
-        ["Client.risk_profile", "CONSERVATIVE, MODERATE, AGGRESSIVE, VERY_AGGRESSIVE"],
-        ["Account.account_type", "DISC, ADV, CUST, TRUST, RET"],
-        ["Holding.asset_class", "EQ, FI, ALT, CASH, RE, COMM"],
-        ["Transaction.type", "BUY, SELL, DIV, INT, FEE, TFI, TFO, DEP, WIT"],
-        ["RiskMetric.scope", "ACCOUNT, PORTFOLIO, SECURITY"],
-        ["DAGRun.state", "queued, running, success, failed, skipped"],
-        ["PipelineAlert.severity", "CRITICAL, WARNING, INFO"],
-    ])
+    add_styled_table(
+        doc,
+        ["Field", "Values"],
+        [
+            ["Client.tier", "UHNW, HNW, MA, INST"],
+            [
+                "Client.risk_profile",
+                "CONSERVATIVE, MODERATE, AGGRESSIVE, VERY_AGGRESSIVE",
+            ],
+            ["Account.account_type", "DISC, ADV, CUST, TRUST, RET"],
+            ["Holding.asset_class", "EQ, FI, ALT, CASH, RE, COMM"],
+            ["Transaction.type", "BUY, SELL, DIV, INT, FEE, TFI, TFO, DEP, WIT"],
+            ["RiskMetric.scope", "ACCOUNT, PORTFOLIO, SECURITY"],
+            ["DAGRun.state", "queued, running, success, failed, skipped"],
+            ["PipelineAlert.severity", "CRITICAL, WARNING, INFO"],
+        ],
+    )
 
     doc.add_heading("5.3 Database Indexes", level=2)
-    add_styled_table(doc, ["Table", "Index", "Purpose"], [
-        ["Client", "(tier, is_active)", "Filter clients by tier"],
-        ["Holding", "(account, ticker) UNIQUE", "Prevent duplicate positions"],
-        ["Transaction", "(account, trade_date)", "Query recent trades per account"],
-        ["Transaction", "(ticker, trade_date)", "Cross-account ticker lookup"],
-        ["MarketData", "(ticker, -price_date)", "Latest price fetch"],
-        ["RiskMetric", "(scope, ref_id, date, lookback) UNIQUE", "Prevent duplicate metrics"],
-        ["DAGRun", "(dag_id, -execution_date)", "Latest runs per DAG"],
-    ])
+    add_styled_table(
+        doc,
+        ["Table", "Index", "Purpose"],
+        [
+            ["Client", "(tier, is_active)", "Filter clients by tier"],
+            ["Holding", "(account, ticker) UNIQUE", "Prevent duplicate positions"],
+            ["Transaction", "(account, trade_date)", "Query recent trades per account"],
+            ["Transaction", "(ticker, trade_date)", "Cross-account ticker lookup"],
+            ["MarketData", "(ticker, -price_date)", "Latest price fetch"],
+            [
+                "RiskMetric",
+                "(scope, ref_id, date, lookback) UNIQUE",
+                "Prevent duplicate metrics",
+            ],
+            ["DAGRun", "(dag_id, -execution_date)", "Latest runs per DAG"],
+        ],
+    )
 
     doc.add_page_break()
 
@@ -683,11 +1329,20 @@ def build_docx(arch_img, dfd_img, etl_img, er_img, req_img):
     last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     doc.add_heading("6.2 DAG Schedule Summary", level=2)
-    add_styled_table(doc, ["DAG", "Schedule", "Timeout", "Retries"], [
-        ["portfolio_etl_dag", "Mon-Fri 18:30 ET", "2 hours", "2 x 5 min"],
-        ["market_data_dag", "Every 15 min (market hours)", "10 minutes", "3 x 2 min"],
-        ["risk_report_dag", "Tue-Sat 00:00 UTC", "3 hours", "1 x 10 min"],
-    ])
+    add_styled_table(
+        doc,
+        ["DAG", "Schedule", "Timeout", "Retries"],
+        [
+            ["portfolio_etl_dag", "Mon-Fri 18:30 ET", "2 hours", "2 x 5 min"],
+            [
+                "market_data_dag",
+                "Every 15 min (market hours)",
+                "10 minutes",
+                "3 x 2 min",
+            ],
+            ["risk_report_dag", "Tue-Sat 00:00 UTC", "3 hours", "1 x 10 min"],
+        ],
+    )
 
     doc.add_heading("6.3 Pipeline Dependency Chain", level=2)
     doc.add_paragraph(
@@ -696,26 +1351,43 @@ def build_docx(arch_img, dfd_img, etl_img, er_img, req_img):
     )
 
     doc.add_heading("6.4 Stress Test Scenarios", level=2)
-    add_styled_table(doc, ["Scenario", "Equity Shock", "Credit Spread", "Volatility"], [
-        ["GFC 2008", "-42%", "+5%", "2.5x"],
-        ["COVID 2020", "-34%", "+2.5%", "4x"],
-        ["Taper Tantrum 2013", "-6%", "+130 bps rates", "-"],
-        ["Rate Rise 300bps", "-18%", "+300 bps rates", "-"],
-    ])
+    add_styled_table(
+        doc,
+        ["Scenario", "Equity Shock", "Credit Spread", "Volatility"],
+        [
+            ["GFC 2008", "-42%", "+5%", "2.5x"],
+            ["COVID 2020", "-34%", "+2.5%", "4x"],
+            ["Taper Tantrum 2013", "-6%", "+130 bps rates", "-"],
+            ["Rate Rise 300bps", "-18%", "+300 bps rates", "-"],
+        ],
+    )
 
     doc.add_page_break()
 
     # --- 7. DASHBOARDS ---
     doc.add_heading("7. Interactive Dashboards (Plotly Dash)", level=1)
 
-    add_styled_table(doc, ["Dashboard", "Mount Path", "Key Components"], [
-        ["PortfolioDashApp", "/django_plotly_dash/app/PortfolioDashApp/",
-         "AUM trend, asset allocation sunburst, attribution bar, rolling return"],
-        ["RiskAnalyticsApp", "/django_plotly_dash/app/RiskAnalyticsApp/",
-         "VaR fan chart, drawdown, correlation heatmap, efficient frontier"],
-        ["ETLMonitorApp", "/django_plotly_dash/app/ETLMonitorApp/",
-         "Gantt timeline, success rate bar, duration box plot"],
-    ])
+    add_styled_table(
+        doc,
+        ["Dashboard", "Mount Path", "Key Components"],
+        [
+            [
+                "PortfolioDashApp",
+                "/django_plotly_dash/app/PortfolioDashApp/",
+                "AUM trend, asset allocation sunburst, attribution bar, rolling return",
+            ],
+            [
+                "RiskAnalyticsApp",
+                "/django_plotly_dash/app/RiskAnalyticsApp/",
+                "VaR fan chart, drawdown, correlation heatmap, efficient frontier",
+            ],
+            [
+                "ETLMonitorApp",
+                "/django_plotly_dash/app/ETLMonitorApp/",
+                "Gantt timeline, success rate bar, duration box plot",
+            ],
+        ],
+    )
 
     doc.add_page_break()
 
@@ -723,14 +1395,43 @@ def build_docx(arch_img, dfd_img, etl_img, er_img, req_img):
     doc.add_heading("8. REST API", level=1)
     doc.add_paragraph("Base URL: /api/v1/ | Authentication: Session + Basic | Pagination: 50 per page")
 
-    add_styled_table(doc, ["Endpoint", "ViewSet", "Methods", "Features"], [
-        ["/api/v1/accounts/clients/", "ClientViewSet", "CRUD", "Search, ordering"],
-        ["/api/v1/accounts/clients/{id}/aum_summary/", "Custom action", "GET", "Returns total AUM"],
-        ["/api/v1/accounts/accounts-list/", "AccountViewSet", "CRUD", "Filter, ordering"],
-        ["/api/v1/accounts/transactions/", "TransactionViewSet", "Read-only", "Filter, ordering"],
-        ["/api/v1/analytics/market-data/", "MarketDataViewSet", "Read-only", "Search, filter"],
-        ["/api/v1/analytics/risk-metrics/", "RiskMetricViewSet", "Read-only", "Filter, ordering"],
-    ])
+    add_styled_table(
+        doc,
+        ["Endpoint", "ViewSet", "Methods", "Features"],
+        [
+            ["/api/v1/accounts/clients/", "ClientViewSet", "CRUD", "Search, ordering"],
+            [
+                "/api/v1/accounts/clients/{id}/aum_summary/",
+                "Custom action",
+                "GET",
+                "Returns total AUM",
+            ],
+            [
+                "/api/v1/accounts/accounts-list/",
+                "AccountViewSet",
+                "CRUD",
+                "Filter, ordering",
+            ],
+            [
+                "/api/v1/accounts/transactions/",
+                "TransactionViewSet",
+                "Read-only",
+                "Filter, ordering",
+            ],
+            [
+                "/api/v1/analytics/market-data/",
+                "MarketDataViewSet",
+                "Read-only",
+                "Search, filter",
+            ],
+            [
+                "/api/v1/analytics/risk-metrics/",
+                "RiskMetricViewSet",
+                "Read-only",
+                "Filter, ordering",
+            ],
+        ],
+    )
 
     doc.add_page_break()
 
@@ -738,26 +1439,34 @@ def build_docx(arch_img, dfd_img, etl_img, er_img, req_img):
     doc.add_heading("9. Infrastructure & Deployment", level=1)
 
     doc.add_heading("9.1 Docker Services", level=2)
-    add_styled_table(doc, ["Service", "Image", "Port (Dev)", "Purpose"], [
-        ["db", "postgres:16-alpine", "3000", "Primary database"],
-        ["redis", "redis:7-alpine", "3001", "Cache + Celery broker"],
-        ["django", "Custom (Python 3.11)", "3002", "Web application"],
-        ["celery-worker", "Same as django", "-", "Background tasks"],
-        ["celery-beat", "Same as django", "-", "Periodic scheduler"],
-        ["airflow-webserver", "Custom (Airflow 2.9)", "3003", "Airflow UI"],
-        ["airflow-scheduler", "Same as airflow", "-", "DAG execution"],
-        ["nginx", "Custom (nginx)", "80, 443", "Reverse proxy (prod)"],
-    ])
+    add_styled_table(
+        doc,
+        ["Service", "Image", "Port (Dev)", "Purpose"],
+        [
+            ["db", "postgres:16-alpine", "3000", "Primary database"],
+            ["redis", "redis:7-alpine", "3001", "Cache + Celery broker"],
+            ["django", "Custom (Python 3.11)", "3002", "Web application"],
+            ["celery-worker", "Same as django", "-", "Background tasks"],
+            ["celery-beat", "Same as django", "-", "Periodic scheduler"],
+            ["airflow-webserver", "Custom (Airflow 2.9)", "3003", "Airflow UI"],
+            ["airflow-scheduler", "Same as airflow", "-", "DAG execution"],
+            ["nginx", "Custom (nginx)", "80, 443", "Reverse proxy (prod)"],
+        ],
+    )
 
     doc.add_heading("9.2 Production Configuration", level=2)
-    add_styled_table(doc, ["Component", "Setting"], [
-        ["Gunicorn", "8 workers, gthread, 4 threads/worker, 120s timeout"],
-        ["Celery", "8 concurrency"],
-        ["PostgreSQL", "shared_buffers=512MB, effective_cache_size=2GB"],
-        ["Redis", "Password-protected, persistence enabled"],
-        ["Nginx", "TLS 1.2/1.3, rate limiting (5 login/min, 60 API/min)"],
-        ["Django", "Non-root user (xyz:xyz), static collected at build"],
-    ])
+    add_styled_table(
+        doc,
+        ["Component", "Setting"],
+        [
+            ["Gunicorn", "8 workers, gthread, 4 threads/worker, 120s timeout"],
+            ["Celery", "8 concurrency"],
+            ["PostgreSQL", "shared_buffers=512MB, effective_cache_size=2GB"],
+            ["Redis", "Password-protected, persistence enabled"],
+            ["Nginx", "TLS 1.2/1.3, rate limiting (5 login/min, 60 API/min)"],
+            ["Django", "Non-root user (xyz:xyz), static collected at build"],
+        ],
+    )
 
     doc.add_page_break()
 
@@ -765,13 +1474,25 @@ def build_docx(arch_img, dfd_img, etl_img, er_img, req_img):
     doc.add_heading("10. CI/CD Pipeline", level=1)
     doc.add_paragraph("Platform: GitHub Actions (.github/workflows/ci-cd.yml)")
 
-    add_styled_table(doc, ["Stage", "Trigger", "Actions"], [
-        ["Lint", "All pushes/PRs", "Black, Flake8 (max-line=120), isort"],
-        ["Test", "After lint", "pytest + coverage, PostgreSQL + Redis services"],
-        ["Build", "Push only", "Multi-arch Docker build, push to GHCR"],
-        ["Deploy Staging", "develop branch", "SSH pull + docker compose up + migrate"],
-        ["Deploy Production", "main branch", "Blue-green deploy, Slack notification"],
-    ])
+    add_styled_table(
+        doc,
+        ["Stage", "Trigger", "Actions"],
+        [
+            ["Lint", "All pushes/PRs", "Black, Flake8 (max-line=120), isort"],
+            ["Test", "After lint", "pytest + coverage, PostgreSQL + Redis services"],
+            ["Build", "Push only", "Multi-arch Docker build, push to GHCR"],
+            [
+                "Deploy Staging",
+                "develop branch",
+                "SSH pull + docker compose up + migrate",
+            ],
+            [
+                "Deploy Production",
+                "main branch",
+                "Blue-green deploy, Slack notification",
+            ],
+        ],
+    )
 
     doc.add_page_break()
 
@@ -779,23 +1500,34 @@ def build_docx(arch_img, dfd_img, etl_img, er_img, req_img):
     doc.add_heading("11. Security", level=1)
 
     doc.add_heading("11.1 Application Security", level=2)
-    add_styled_table(doc, ["Control", "Implementation"], [
-        ["Authentication", "Django session auth, @login_required on all views"],
-        ["CSRF", "CsrfViewMiddleware + CSRF_TRUSTED_ORIGINS"],
-        ["CORS", "django-cors-headers, whitelist-only in production"],
-        ["Secrets", "Environment variables via .env, never committed"],
-        ["Password Policy", "4 validators (similarity, min length, common, numeric)"],
-    ])
+    add_styled_table(
+        doc,
+        ["Control", "Implementation"],
+        [
+            ["Authentication", "Django session auth, @login_required on all views"],
+            ["CSRF", "CsrfViewMiddleware + CSRF_TRUSTED_ORIGINS"],
+            ["CORS", "django-cors-headers, whitelist-only in production"],
+            ["Secrets", "Environment variables via .env, never committed"],
+            [
+                "Password Policy",
+                "4 validators (similarity, min length, common, numeric)",
+            ],
+        ],
+    )
 
     doc.add_heading("11.2 Production Hardening", level=2)
-    add_styled_table(doc, ["Control", "Setting"], [
-        ["HSTS", "Enabled with preload"],
-        ["Secure Cookies", "SESSION_COOKIE_SECURE=True, CSRF_COOKIE_SECURE=True"],
-        ["SSL Redirect", "SECURE_SSL_REDIRECT=True"],
-        ["X-Frame-Options", "DENY (prod), SAMEORIGIN (dev for Dash iframes)"],
-        ["Rate Limiting", "Login: 5 req/min, API: 60 req/min (Nginx)"],
-        ["Container Security", "Non-root user (xyz:xyz), minimal base image"],
-    ])
+    add_styled_table(
+        doc,
+        ["Control", "Setting"],
+        [
+            ["HSTS", "Enabled with preload"],
+            ["Secure Cookies", "SESSION_COOKIE_SECURE=True, CSRF_COOKIE_SECURE=True"],
+            ["SSL Redirect", "SECURE_SSL_REDIRECT=True"],
+            ["X-Frame-Options", "DENY (prod), SAMEORIGIN (dev for Dash iframes)"],
+            ["Rate Limiting", "Login: 5 req/min, API: 60 req/min (Nginx)"],
+            ["Container Security", "Non-root user (xyz:xyz), minimal base image"],
+        ],
+    )
 
     doc.add_page_break()
 
@@ -803,22 +1535,30 @@ def build_docx(arch_img, dfd_img, etl_img, er_img, req_img):
     doc.add_heading("12. Observability", level=1)
 
     doc.add_heading("12.1 Logging", level=2)
-    add_styled_table(doc, ["Logger", "Level", "Handlers"], [
-        ["Root", "INFO", "Console"],
-        ["django", "WARNING", "Console + Rotating File"],
-        ["apps", "DEBUG", "Console + Rotating File"],
-        ["dags", "INFO", "Console + Rotating File"],
-    ])
+    add_styled_table(
+        doc,
+        ["Logger", "Level", "Handlers"],
+        [
+            ["Root", "INFO", "Console"],
+            ["django", "WARNING", "Console + Rotating File"],
+            ["apps", "DEBUG", "Console + Rotating File"],
+            ["dags", "INFO", "Console + Rotating File"],
+        ],
+    )
     doc.add_paragraph("Log files rotate at 10 MB with 5 backups (logs/xyz_platform.log).")
 
     doc.add_heading("12.2 Health Checks", level=2)
-    add_styled_table(doc, ["Component", "Method"], [
-        ["Django", "curl /admin/login/ (Docker healthcheck)"],
-        ["Nginx", "/health/ -> 200 OK"],
-        ["PostgreSQL", "pg_isready"],
-        ["Redis", "redis-cli ping"],
-        ["Airflow", "curl /health"],
-    ])
+    add_styled_table(
+        doc,
+        ["Component", "Method"],
+        [
+            ["Django", "curl /admin/login/ (Docker healthcheck)"],
+            ["Nginx", "/health/ -> 200 OK"],
+            ["PostgreSQL", "pg_isready"],
+            ["Redis", "redis-cli ping"],
+            ["Airflow", "curl /health"],
+        ],
+    )
 
     doc.add_heading("12.3 Error Tracking", level=2)
     doc.add_paragraph(
@@ -831,9 +1571,7 @@ def build_docx(arch_img, dfd_img, etl_img, er_img, req_img):
     doc.add_page_break()
     footer = doc.add_paragraph()
     footer.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = footer.add_run(
-        "© Brown Brothers Harriman & Co. — Confidential & Proprietary. For internal use only."
-    )
+    run = footer.add_run("© Brown Brothers Harriman & Co. — Confidential & Proprietary. For internal use only.")
     run.font.size = Pt(9)
     run.font.color.rgb = RGBColor(0x6B, 0x72, 0x80)
     run.italic = True

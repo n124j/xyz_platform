@@ -1,6 +1,8 @@
 """XYZ Platform — Account Management DRF Serializers."""
+
 from rest_framework import serializers
-from .models import Client, Account, Holding, Transaction
+
+from .models import Account, Client, Holding, Transaction
 
 
 class HoldingSerializer(serializers.ModelSerializer):

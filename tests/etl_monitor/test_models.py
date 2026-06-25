@@ -1,8 +1,8 @@
 import pytest
-from datetime import timedelta
-from django.utils import timezone
 from django.db import IntegrityError
-from apps.etl_monitor.models import DAGRun, TaskInstance, PipelineAlert
+from django.utils import timezone
+
+from apps.etl_monitor.models import DAGRun, PipelineAlert, TaskInstance
 
 
 @pytest.mark.django_db
@@ -33,8 +33,10 @@ class TestDAGRunModel:
 
     def test_is_healthy_running(self, db):
         run = DAGRun.objects.create(
-            dag_id="test", dag_run_id="test-running",
-            state="running", execution_date=timezone.now(),
+            dag_id="test",
+            dag_run_id="test-running",
+            state="running",
+            execution_date=timezone.now(),
         )
         assert run.is_healthy is False
 
@@ -45,8 +47,10 @@ class TestDAGRunModel:
 
     def test_duration_display_no_duration(self, db):
         run = DAGRun.objects.create(
-            dag_id="test", dag_run_id="test-no-dur",
-            state="queued", execution_date=timezone.now(),
+            dag_id="test",
+            dag_run_id="test-no-dur",
+            state="queued",
+            execution_date=timezone.now(),
         )
         assert run.duration_display == "—"
 
@@ -57,8 +61,10 @@ class TestDAGRunModel:
 
     def test_json_conf_default(self, db):
         run = DAGRun.objects.create(
-            dag_id="test", dag_run_id="test-conf",
-            state="queued", execution_date=timezone.now(),
+            dag_id="test",
+            dag_run_id="test-conf",
+            state="queued",
+            execution_date=timezone.now(),
         )
         assert run.conf == {}
 
@@ -115,8 +121,10 @@ class TestPipelineAlertModel:
         assert pipeline_alert.dag_run is None
 
     def test_ordering_by_created_at_desc(self, pipeline_alert, db, failed_dag_run):
-        alert2 = PipelineAlert.objects.create(
-            dag_id="test_dag", severity="WARNING", message="Test alert",
+        PipelineAlert.objects.create(
+            dag_id="test_dag",
+            severity="WARNING",
+            message="Test alert",
         )
         alerts = list(PipelineAlert.objects.all())
         assert alerts[0].created_at >= alerts[1].created_at

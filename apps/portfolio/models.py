@@ -4,8 +4,10 @@ XYZ Platform — Portfolio Dashboard Models
 Stores aggregated portfolio-level statistics and snapshots
 used by Plotly Dash and D3.js visualisations.
 """
-from django.db import models
+
 from decimal import Decimal
+
+from django.db import models
 
 
 class PortfolioSnapshot(models.Model):
@@ -13,6 +15,7 @@ class PortfolioSnapshot(models.Model):
     Daily AUM and performance snapshot — persisted by the
     portfolio_etl_dag Airflow pipeline after each market close.
     """
+
     snapshot_date = models.DateField(db_index=True)
     total_aum = models.DecimalField(max_digits=22, decimal_places=2)
     equity_value = models.DecimalField(max_digits=22, decimal_places=2, default=Decimal("0"))
@@ -48,6 +51,7 @@ class PortfolioSnapshot(models.Model):
 
 class AssetAllocationTarget(models.Model):
     """Strategic asset allocation targets per risk profile."""
+
     risk_profile = models.CharField(max_length=20, unique=True)
     equity_target_pct = models.DecimalField(max_digits=5, decimal_places=2)
     fixed_income_target_pct = models.DecimalField(max_digits=5, decimal_places=2)

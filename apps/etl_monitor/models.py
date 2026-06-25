@@ -4,11 +4,13 @@ XYZ Platform — ETL Pipeline Monitor Models
 Provides a Django-native view of Airflow DAG run history
 and pipeline health, cached from the Airflow REST API.
 """
+
 from django.db import models
 
 
 class DAGRun(models.Model):
     """Cached Airflow DAG run record."""
+
     class State(models.TextChoices):
         QUEUED = "queued", "Queued"
         RUNNING = "running", "Running"
@@ -49,6 +51,7 @@ class DAGRun(models.Model):
 
 class TaskInstance(models.Model):
     """Individual Airflow task within a DAG run."""
+
     dag_run = models.ForeignKey(DAGRun, on_delete=models.CASCADE, related_name="task_instances")
     task_id = models.CharField(max_length=255)
     state = models.CharField(max_length=20)
@@ -68,6 +71,7 @@ class TaskInstance(models.Model):
 
 class PipelineAlert(models.Model):
     """Alert raised when a DAG fails or exceeds SLA."""
+
     class Severity(models.TextChoices):
         CRITICAL = "CRITICAL", "Critical"
         WARNING = "WARNING", "Warning"
@@ -78,9 +82,7 @@ class PipelineAlert(models.Model):
     severity = models.CharField(max_length=10, choices=Severity.choices, default=Severity.WARNING)
     message = models.TextField()
     acknowledged = models.BooleanField(default=False)
-    acknowledged_by = models.ForeignKey(
-        "auth.User", on_delete=models.SET_NULL, null=True, blank=True
-    )
+    acknowledged_by = models.ForeignKey("auth.User", on_delete=models.SET_NULL, null=True, blank=True)
     acknowledged_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -108,9 +110,7 @@ class AdHocTaskExecution(models.Model):
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
     result = models.JSONField(null=True, blank=True)
     error_message = models.TextField(blank=True)
-    triggered_by = models.ForeignKey(
-        "auth.User", on_delete=models.SET_NULL, null=True, related_name="adhoc_tasks"
-    )
+    triggered_by = models.ForeignKey("auth.User", on_delete=models.SET_NULL, null=True, related_name="adhoc_tasks")
     created_at = models.DateTimeField(auto_now_add=True)
     started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)

@@ -108,71 +108,49 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "annualised_return",
-                    models.DecimalField(
-                        blank=True, decimal_places=4, max_digits=10, null=True
-                    ),
+                    models.DecimalField(blank=True, decimal_places=4, max_digits=10, null=True),
                 ),
                 (
                     "annualised_volatility",
-                    models.DecimalField(
-                        blank=True, decimal_places=4, max_digits=10, null=True
-                    ),
+                    models.DecimalField(blank=True, decimal_places=4, max_digits=10, null=True),
                 ),
                 (
                     "sharpe_ratio",
-                    models.DecimalField(
-                        blank=True, decimal_places=4, max_digits=10, null=True
-                    ),
+                    models.DecimalField(blank=True, decimal_places=4, max_digits=10, null=True),
                 ),
                 (
                     "sortino_ratio",
-                    models.DecimalField(
-                        blank=True, decimal_places=4, max_digits=10, null=True
-                    ),
+                    models.DecimalField(blank=True, decimal_places=4, max_digits=10, null=True),
                 ),
                 (
                     "max_drawdown",
-                    models.DecimalField(
-                        blank=True, decimal_places=4, max_digits=10, null=True
-                    ),
+                    models.DecimalField(blank=True, decimal_places=4, max_digits=10, null=True),
                 ),
                 (
                     "beta",
-                    models.DecimalField(
-                        blank=True, decimal_places=4, max_digits=8, null=True
-                    ),
+                    models.DecimalField(blank=True, decimal_places=4, max_digits=8, null=True),
                 ),
                 (
                     "alpha",
-                    models.DecimalField(
-                        blank=True, decimal_places=4, max_digits=8, null=True
-                    ),
+                    models.DecimalField(blank=True, decimal_places=4, max_digits=8, null=True),
                 ),
                 (
                     "information_ratio",
-                    models.DecimalField(
-                        blank=True, decimal_places=4, max_digits=8, null=True
-                    ),
+                    models.DecimalField(blank=True, decimal_places=4, max_digits=8, null=True),
                 ),
                 (
                     "tracking_error",
-                    models.DecimalField(
-                        blank=True, decimal_places=4, max_digits=8, null=True
-                    ),
+                    models.DecimalField(blank=True, decimal_places=4, max_digits=8, null=True),
                 ),
                 (
                     "lookback_days",
-                    models.IntegerField(
-                        default=252, help_text="Rolling window in trading days"
-                    ),
+                    models.IntegerField(default=252, help_text="Rolling window in trading days"),
                 ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
                 "ordering": ["-calculation_date"],
-                "unique_together": {
-                    ("scope", "reference_id", "calculation_date", "lookback_days")
-                },
+                "unique_together": {("scope", "reference_id", "calculation_date", "lookback_days")},
             },
         ),
         migrations.CreateModel(

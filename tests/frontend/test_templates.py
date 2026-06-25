@@ -1,12 +1,6 @@
 import pytest
-from decimal import Decimal
-from datetime import date
-from django.urls import reverse
 from django.template.loader import get_template
-from django.template import TemplateDoesNotExist
-from apps.accounts.models import Client, Account
-from apps.portfolio.models import PortfolioSnapshot
-from apps.analytics.models import RiskMetric
+from django.urls import reverse
 
 
 @pytest.mark.django_db
@@ -67,17 +61,23 @@ class TestLoginPage:
         assert "login" in content.lower() or "password" in content.lower()
 
     def test_login_with_valid_credentials(self, client, user):
-        response = client.post(reverse("login"), {
-            "username": "testuser",
-            "password": "testpass123",
-        })
+        response = client.post(
+            reverse("login"),
+            {
+                "username": "testuser",
+                "password": "testpass123",
+            },
+        )
         assert response.status_code == 302
 
     def test_login_with_invalid_credentials(self, client, user):
-        response = client.post(reverse("login"), {
-            "username": "testuser",
-            "password": "wrongpassword",
-        })
+        response = client.post(
+            reverse("login"),
+            {
+                "username": "testuser",
+                "password": "wrongpassword",
+            },
+        )
         assert response.status_code == 200
 
 
@@ -85,7 +85,6 @@ class TestLoginPage:
 class TestPortfolioDashboardRendering:
     def test_renders_kpi_cards(self, authenticated_client, portfolio_snapshot):
         response = authenticated_client.get(reverse("portfolio:dashboard"))
-        content = response.content.decode()
         assert response.status_code == 200
 
     def test_renders_without_data(self, authenticated_client):

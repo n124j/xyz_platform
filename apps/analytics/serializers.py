@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import MarketData, RiskMetric, BenchmarkReturn, PerformanceAttribution
+
+from .models import BenchmarkReturn, MarketData, PerformanceAttribution, RiskMetric
 
 
 class MarketDataSerializer(serializers.ModelSerializer):

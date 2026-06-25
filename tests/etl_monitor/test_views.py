@@ -1,9 +1,7 @@
-import pytest
 import json
+
+import pytest
 from django.urls import reverse
-from django.contrib.auth.models import Permission
-from django.contrib.contenttypes.models import ContentType
-from apps.etl_monitor.models import DAGRun, PipelineAlert
 
 
 @pytest.mark.django_db
@@ -41,16 +39,12 @@ class TestDAGRunListView:
         assert len(response.context["dag_runs"]) == 2
 
     def test_filter_by_dag_id(self, authenticated_client, dag_run, failed_dag_run):
-        response = authenticated_client.get(
-            reverse("etl_monitor:dag_run_list") + "?dag_id=portfolio_etl_dag"
-        )
+        response = authenticated_client.get(reverse("etl_monitor:dag_run_list") + "?dag_id=portfolio_etl_dag")
         for run in response.context["dag_runs"]:
             assert run.dag_id == "portfolio_etl_dag"
 
     def test_filter_by_state(self, authenticated_client, dag_run, failed_dag_run):
-        response = authenticated_client.get(
-            reverse("etl_monitor:dag_run_list") + "?state=failed"
-        )
+        response = authenticated_client.get(reverse("etl_monitor:dag_run_list") + "?state=failed")
         for run in response.context["dag_runs"]:
             assert run.state == "failed"
 
@@ -66,15 +60,11 @@ class TestDAGRunListView:
 @pytest.mark.django_db
 class TestTriggerDAGView:
     def test_requires_authentication(self, client):
-        response = client.post(
-            reverse("etl_monitor:trigger_dag", args=["portfolio_etl_dag"])
-        )
+        response = client.post(reverse("etl_monitor:trigger_dag", args=["portfolio_etl_dag"]))
         assert response.status_code == 302
 
     def test_requires_permission(self, authenticated_client):
-        response = authenticated_client.post(
-            reverse("etl_monitor:trigger_dag", args=["portfolio_etl_dag"])
-        )
+        response = authenticated_client.post(reverse("etl_monitor:trigger_dag", args=["portfolio_etl_dag"]))
         assert response.status_code == 403
 
 

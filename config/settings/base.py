@@ -3,8 +3,8 @@ XYZ Platform — Base Django Settings
 XYZ Corp Internal Investment Banking Platform
 """
 
-import os
 from pathlib import Path
+
 import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -229,7 +229,11 @@ LOGGING = {
     },
     "root": {"handlers": ["console"], "level": "INFO"},
     "loggers": {
-        "django": {"handlers": ["console", "file"], "level": "WARNING", "propagate": False},
+        "django": {
+            "handlers": ["console", "file"],
+            "level": "WARNING",
+            "propagate": False,
+        },
         "apps": {"handlers": ["console", "file"], "level": "DEBUG", "propagate": False},
         "dags": {"handlers": ["console", "file"], "level": "INFO", "propagate": False},
     },
