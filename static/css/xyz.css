@@ -1,0 +1,89 @@
+/* ===================================================
+   XYZ Investment Platform — Core Stylesheet
+   XYZ Corp
+   =================================================== */
+
+:root {
+  --xyz-navy:       #0a1628;
+  --xyz-blue:       #1a3a6b;
+  --xyz-gold:       #c5a028;
+  --xyz-light-blue: #e8f0fc;
+  --xyz-surface:    #f8f9fc;
+  --xyz-border:     rgba(0,0,0,.08);
+}
+
+/* ─── Layout ──────────────────────────────────────────────── */
+body.xyz-body {
+  background: var(--xyz-surface);
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  padding-top: 62px; /* account for fixed navbar */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.xyz-main { flex: 1; padding-bottom: 2rem; }
+
+/* ─── Navbar ──────────────────────────────────────────────── */
+.xyz-navbar {
+  background: var(--xyz-navy) !important;
+  border-bottom: 2px solid var(--xyz-gold);
+  box-shadow: 0 2px 12px rgba(0,0,0,.3);
+}
+
+.xyz-navbar .nav-link          { color: rgba(255,255,255,.8) !important; font-size: .875rem; }
+.xyz-navbar .nav-link:hover,
+.xyz-navbar .nav-link.active   { color: #fff !important; }
+.xyz-navbar .nav-link.active   { border-bottom: 2px solid var(--xyz-gold); padding-bottom: .25rem; }
+
+/* ─── Cards ───────────────────────────────────────────────── */
+.card {
+  border: 1px solid var(--xyz-border);
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+.card-header {
+  background: #fff;
+  border-bottom: 1px solid var(--xyz-border);
+  border-radius: 10px 10px 0 0 !important;
+  padding: .75rem 1rem;
+}
+
+/* ─── KPI Cards ───────────────────────────────────────────── */
+.kpi-card { background: #fff; }
+
+/* ─── Footer ──────────────────────────────────────────────── */
+.xyz-footer {
+  background: var(--xyz-navy);
+  color: rgba(255,255,255,.5);
+  font-size: .78rem;
+}
+
+/* ─── Badges ──────────────────────────────────────────────── */
+.badge { font-weight: 500; letter-spacing: .02em; }
+
+/* ─── D3 Tooltip ──────────────────────────────────────────── */
+.d3-tooltip {
+  pointer-events: none;
+  z-index: 9999;
+  border: 1px solid rgba(255,255,255,.15);
+  font-size: 12px;
+}
+
+/* ─── AG Grid overrides ───────────────────────────────────── */
+.ag-theme-alpine .ag-header { background: var(--xyz-navy); color: #fff; }
+.ag-theme-alpine .ag-header-cell-label { color: #fff; font-weight: 600; font-size: .78rem; }
+.ag-theme-alpine .ag-row-even { background: #fff; }
+.ag-theme-alpine .ag-row-odd  { background: var(--xyz-light-blue); }
+.ag-theme-alpine .ag-row:hover { background: #dce8ff !important; }
+.ag-theme-alpine .ag-paging-panel { border-top: 1px solid var(--xyz-border); }
+
+/* ─── Plotly Dash iframe ──────────────────────────────────── */
+.dash-app iframe { border: none; width: 100%; }
+
+/* ─── Responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .kpi-value { font-size: 1.35rem; }
+  #aum-chart, #candlestick-chart { min-height: 220px; }
+}

@@ -1,0 +1,260 @@
+{% extends "base/base.html" %}
+{% load static humanize %}
+
+{% block title %}Portfolio Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+  .kpi-card { border-left: 4px solid #0d6efd; transition: transform .15s; }
+  .kpi-card:hover { transform: translateY(-2px); }
+  .kpi-value { font-size: 1.75rem; font-weight: 700; }
+  .kpi-positive { color: #198754; }
+  .kpi-negative { color: #dc3545; }
+  #aum-chart, #allocation-chart { width: 100%; min-height: 320px; }
+  #holdings-grid { height: 420px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-bar-chart-line me-2 text-primary"></i>Portfolio Overview</h4>
+    <small class="text-muted">As of {% if snapshot %}{{ snapshot.snapshot_date }}{% else %}today{% endif %} — All figures in USD</small>
+  </div>
+  <div class="d-flex gap-2">
+    <select id="period-selector" class="form-select form-select-sm" style="width:auto">
+      <option value="30">Last 30 days</option>
+      <option value="90" selected>Last 90 days</option>
+      <option value="180">Last 6 months</option>
+      <option value="365">Last 12 months</option>
+    </select>
+    <button class="btn btn-sm btn-outline-secondary" onclick="refreshDashboard()">
+      <i class="bi bi-arrow-clockwise"></i>
+    </button>
+  </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card kpi-card h-100 p-3">
+      <div class="text-muted small mb-1"><i class="bi bi-bank me-1"></i>Total AUM</div>
+      <div class="kpi-value">${{ snapshot.total_aum|floatformat:0|intcomma|default:"—" }}</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card kpi-card h-100 p-3" style="border-left-color:{% if snapshot.daily_pnl >= 0 %}#198754{% else %}#dc3545{% endif %}">
+      <div class="text-muted small mb-1"><i class="bi bi-graph-up me-1"></i>Daily P&amp;L</div>
+      <div class="kpi-value {% if snapshot.daily_pnl >= 0 %}kpi-positive{% else %}kpi-negative{% endif %}">
+        ${{ snapshot.daily_pnl|floatformat:0|intcomma|default:"—" }}
+      </div>
+      <small class="text-muted">{{ snapshot.daily_return_pct|floatformat:2|default:"—" }}% daily</small>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card kpi-card h-100 p-3" style="border-left-color:#6f42c1">
+      <div class="text-muted small mb-1"><i class="bi bi-calendar3 me-1"></i>YTD Return</div>
+      <div class="kpi-value {% if snapshot.ytd_return_pct >= 0 %}kpi-positive{% else %}kpi-negative{% endif %}">
+        {{ snapshot.ytd_return_pct|floatformat:2|default:"—" }}%
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card kpi-card h-100 p-3" style="border-left-color:#fd7e14">
+      <div class="text-muted small mb-1"><i class="bi bi-people me-1"></i>Clients / Accounts</div>
+      <div class="kpi-value">{{ client_count }} / {{ account_count }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- AUM Trend (D3.js) + Allocation Donut (D3.js) -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-8">
+    <div class="card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0 fw-semibold">AUM Trend</h6>
+        <small class="text-muted">D3.js — daily close</small>
+      </div>
+      <div id="aum-chart"></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card p-3 h-100">
+      <h6 class="mb-2 fw-semibold">Asset Allocation</h6>
+      <div id="allocation-chart"></div>
+      <div id="allocation-legend" class="mt-2 small"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Plotly Dash Portfolio Dashboard (embedded) -->
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between">
+    <span class="fw-semibold"><i class="bi bi-pie-chart me-1"></i>Interactive Portfolio Analytics</span>
+    <small class="text-muted">Powered by Plotly Dash</small>
+  </div>
+  <div class="card-body p-0">
+    {% load plotly_dash %}
+    {% plotly_app name="PortfolioDashApp" ratio=0.55 %}
+  </div>
+</div>
+
+<!-- Holdings AG Grid -->
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="fw-semibold"><i class="bi bi-table me-1"></i>Top Holdings</span>
+    <div class="d-flex gap-2">
+      <input type="text" id="holdings-filter" class="form-control form-control-sm" placeholder="Filter..." style="width:200px" />
+      <button class="btn btn-sm btn-outline-primary" onclick="exportHoldings()">
+        <i class="bi bi-download me-1"></i>Export CSV
+      </button>
+    </div>
+  </div>
+  <div class="card-body p-2">
+    <div id="holdings-grid" class="ag-theme-alpine"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ─── AG Grid — Holdings ─────────────────────────────────────────
+const holdingsColDefs = [
+  { field: "ticker", headerName: "Ticker", width: 100, pinned: "left",
+    cellRenderer: p => `<strong>${p.value}</strong>` },
+  { field: "security_name", headerName: "Security", flex: 1 },
+  { field: "asset_class", headerName: "Asset Class", width: 140 },
+  { field: "market_value", headerName: "Market Value",
+    valueFormatter: p => p.value ? "$" + Number(p.value).toLocaleString("en-US", {minimumFractionDigits:0}) : "—",
+    type: "numericColumn", width: 160 },
+  { field: "weight", headerName: "Weight %",
+    valueFormatter: p => p.value ? (p.value * 100).toFixed(2) + "%" : "—",
+    type: "numericColumn", width: 110 },
+  { field: "unrealized_pnl", headerName: "Unrealized P&L",
+    valueFormatter: p => p.value ? "$" + Number(p.value).toLocaleString("en-US", {minimumFractionDigits:0}) : "—",
+    cellStyle: p => ({ color: p.value >= 0 ? "#198754" : "#dc3545" }),
+    type: "numericColumn", width: 160 },
+];
+
+const holdingsGrid = agGrid.createGrid(document.querySelector("#holdings-grid"), {
+  columnDefs: holdingsColDefs,
+  rowData: [],
+  defaultColDef: { sortable: true, filter: true, resizable: true },
+  pagination: true,
+  paginationPageSize: 15,
+  animateRows: true,
+  theme: "legacy",
+});
+
+document.getElementById("holdings-filter").addEventListener("input", e => {
+  holdingsGrid.setGridOption("quickFilterText", e.target.value);
+});
+
+function exportHoldings() { holdingsGrid.exportDataAsCsv({ fileName: "xyz_holdings.csv" }); }
+
+// ─── D3.js — AUM Trend Chart ────────────────────────────────────
+function renderAUMChart(data) {
+  const el = document.getElementById("aum-chart");
+  el.innerHTML = "";
+  const margin = { top: 10, right: 20, bottom: 30, left: 70 };
+  const width = el.offsetWidth - margin.left - margin.right;
+  const height = 280 - margin.top - margin.bottom;
+
+  const svg = d3.select(el).append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const parseDate = d3.timeParse("%Y-%m-%d");
+  const series = data.map(d => ({ date: parseDate(d.date), aum: +d.aum }));
+
+  const x = d3.scaleTime().domain(d3.extent(series, d => d.date)).range([0, width]);
+  const y = d3.scaleLinear().domain([d3.min(series, d => d.aum) * 0.98, d3.max(series, d => d.aum) * 1.02]).range([height, 0]);
+
+  // Gradient fill
+  const defs = svg.append("defs");
+  const grad = defs.append("linearGradient").attr("id","aumGrad").attr("x1","0%").attr("y1","0%").attr("x2","0%").attr("y2","100%");
+  grad.append("stop").attr("offset","0%").attr("stop-color","#0d6efd").attr("stop-opacity",0.3);
+  grad.append("stop").attr("offset","100%").attr("stop-color","#0d6efd").attr("stop-opacity",0);
+
+  const area = d3.area().x(d => x(d.date)).y0(height).y1(d => y(d.aum)).curve(d3.curveMonotoneX);
+  const line = d3.line().x(d => x(d.date)).y(d => y(d.aum)).curve(d3.curveMonotoneX);
+
+  svg.append("path").datum(series).attr("fill","url(#aumGrad)").attr("d", area);
+  svg.append("path").datum(series).attr("fill","none").attr("stroke","#0d6efd").attr("stroke-width",2).attr("d", line);
+
+  svg.append("g").attr("transform",`translate(0,${height})`).call(d3.axisBottom(x).ticks(6).tickFormat(d3.timeFormat("%b %d")));
+  svg.append("g").call(d3.axisLeft(y).ticks(5).tickFormat(d => "$" + d3.format(".2s")(d)));
+
+  // Tooltip
+  const tooltip = d3.select(el).append("div").attr("class","d3-tooltip").style("position","absolute").style("display","none")
+    .style("background","rgba(0,0,0,.8)").style("color","#fff").style("padding","6px 10px").style("border-radius","4px").style("font-size","12px");
+
+  svg.append("rect").attr("width",width).attr("height",height).attr("fill","none").attr("pointer-events","all")
+    .on("mousemove", function(event) {
+      const [mx] = d3.pointer(event);
+      const x0 = x.invert(mx);
+      const i = d3.bisectLeft(series.map(d => d.date), x0);
+      const d = series[Math.min(i, series.length-1)];
+      if (d) {
+        tooltip.style("display","block").style("left",(mx + margin.left + 10)+"px").style("top","10px")
+          .html(`<strong>${d3.timeFormat("%b %d")(d.date)}</strong><br/>AUM: $${d3.format(",.0f")(d.aum)}`);
+      }
+    }).on("mouseleave", () => tooltip.style("display","none"));
+}
+
+// ─── D3.js — Asset Allocation Donut ────────────────────────────
+function renderAllocationChart(snapshot) {
+  const alloc = [
+    { label: "Equity",        value: snapshot.equity_value,        color: "#0d6efd" },
+    { label: "Fixed Income",  value: snapshot.fixed_income_value,  color: "#198754" },
+    { label: "Alternatives",  value: snapshot.alternatives_value,  color: "#6f42c1" },
+    { label: "Cash",          value: snapshot.cash_value,          color: "#fd7e14" },
+  ].filter(d => d.value > 0);
+
+  const el = document.getElementById("allocation-chart");
+  const w = el.offsetWidth || 220, h = 200, r = Math.min(w, h) / 2 - 10;
+  el.innerHTML = "";
+
+  const svg = d3.select(el).append("svg").attr("width", w).attr("height", h)
+    .append("g").attr("transform", `translate(${w/2},${h/2})`);
+
+  const pie = d3.pie().value(d => d.value).sort(null);
+  const arc = d3.arc().innerRadius(r * 0.55).outerRadius(r);
+
+  svg.selectAll("path").data(pie(alloc)).enter().append("path")
+    .attr("d", arc).attr("fill", d => d.data.color).attr("stroke","#fff").attr("stroke-width",1.5);
+
+  const legend = document.getElementById("allocation-legend");
+  const total = alloc.reduce((s,d) => s + d.value, 0);
+  legend.innerHTML = alloc.map(d =>
+    `<div class="d-flex justify-content-between">
+       <span><span style="color:${d.color}">■</span> ${d.label}</span>
+       <strong>${total ? (d.value/total*100).toFixed(1) : 0}%</strong>
+     </div>`
+  ).join("");
+}
+
+// ─── Load data ─────────────────────────────────────────────────
+function refreshDashboard() {
+  const days = document.getElementById("period-selector").value;
+  fetch(`{% url 'portfolio:snapshot_api' %}?days=${days}`)
+    .then(r => r.json())
+    .then(data => { if (data.series && data.series.length) renderAUMChart(data.series); });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  refreshDashboard();
+  // Synthetic allocation data (replaced by API in production)
+  const snap = {
+    equity_value: {{ snapshot.equity_value|default:0 }},
+    fixed_income_value: {{ snapshot.fixed_income_value|default:0 }},
+    alternatives_value: {{ snapshot.alternatives_value|default:0 }},
+    cash_value: {{ snapshot.cash_value|default:0 }},
+  };
+  renderAllocationChart(snap);
+});
+
+document.getElementById("period-selector").addEventListener("change", refreshDashboard);
+</script>
+{% endblock %}

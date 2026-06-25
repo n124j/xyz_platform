@@ -1,0 +1,167 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}ETL Pipeline Monitor{% endblock %}
+
+{% block extra_css %}
+<style>
+  .dag-card { border-left: 4px solid; transition: box-shadow .15s; }
+  .dag-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+  .dag-card.success { border-left-color: #198754; }
+  .dag-card.failed  { border-left-color: #dc3545; }
+  .dag-card.running { border-left-color: #0d6efd; }
+  .dag-card.queued  { border-left-color: #fd7e14; }
+  .pulse { animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{ opacity:1; } 50%{ opacity:.4; } }
+  #runs-grid { height: 400px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-diagram-3 me-2 text-primary"></i>ETL Pipeline Monitor</h4>
+    <small class="text-muted">Airflow integration — auto-synced every 5 minutes via Celery</small>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'etl_monitor:adhoc_tasks' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-terminal me-1"></i>Ad-Hoc Tasks
+    </a>
+    <button class="btn btn-sm btn-outline-primary" onclick="syncNow()">
+      <i class="bi bi-arrow-clockwise me-1"></i>Sync Now
+    </button>
+  </div>
+</div>
+
+<!-- Active Alerts -->
+{% if alerts %}
+<div class="alert alert-danger d-flex align-items-center gap-2 mb-4">
+  <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+  <div>
+    <strong>{{ alerts|length }} active pipeline alert{{ alerts|pluralize }}</strong> —
+    {% for alert in alerts|slice:":3" %}
+    <span class="me-2">{{ alert.dag_id }}: {{ alert.message|truncatechars:60 }}</span>
+    {% endfor %}
+    {% if alerts|length > 3 %}<a href="{% url 'etl_monitor:dag_run_list' %}">+ more</a>{% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- DAG Status Cards -->
+<div class="row g-3 mb-4">
+  {% for run in dag_runs %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card dag-card {{ run.state }} p-3 h-100">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h6 class="fw-semibold mb-1">{{ run.dag_id|cut:"_dag"|title }}</h6>
+          <code class="small text-muted">{{ run.dag_id }}</code>
+        </div>
+        <span class="badge {% if run.state == 'success' %}bg-success{% elif run.state == 'failed' %}bg-danger{% elif run.state == 'running' %}bg-primary{% else %}bg-warning text-dark{% endif %}">
+          {% if run.state == "running" %}<span class="pulse">⬤</span> {% endif %}
+          {{ run.state|upper }}
+        </span>
+      </div>
+      <hr class="my-2" />
+      <div class="row text-center small">
+        <div class="col">
+          <div class="text-muted">Last Run</div>
+          <strong>{{ run.execution_date|date:"M d, H:i" }}</strong>
+        </div>
+        <div class="col">
+          <div class="text-muted">Duration</div>
+          <strong>{{ run.duration_display }}</strong>
+        </div>
+        <div class="col">
+          <div class="text-muted">Type</div>
+          <strong>{{ run.run_type|title }}</strong>
+        </div>
+      </div>
+      <div class="mt-3 d-flex gap-2">
+        <a href="{% url 'etl_monitor:dag_run_list' %}?dag_id={{ run.dag_id }}" class="btn btn-sm btn-outline-secondary flex-fill">
+          <i class="bi bi-clock-history me-1"></i>History
+        </a>
+        <form method="post" action="{% url 'etl_monitor:trigger_dag' run.dag_id %}" class="flex-fill">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+            <i class="bi bi-play-circle me-1"></i>Trigger
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <div class="card p-4 text-center text-muted">
+      <i class="bi bi-cloud-slash fs-1 mb-2"></i>
+      <p class="mb-0">No DAG run data available. Make sure the Airflow API is reachable and Celery sync has run.</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Plotly Dash ETL Timeline -->
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between">
+    <span class="fw-semibold"><i class="bi bi-clock me-1"></i>Pipeline Run Timeline</span>
+    <small class="text-muted">Plotly Dash — Gantt view</small>
+  </div>
+  <div class="card-body p-0">
+    {% load plotly_dash %}
+    {% plotly_app name="ETLMonitorApp" ratio=0.4 %}
+  </div>
+</div>
+
+<!-- AG Grid — Run History -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="fw-semibold"><i class="bi bi-table me-1"></i>Recent Run History</span>
+    <a href="{% url 'etl_monitor:dag_run_list' %}" class="btn btn-sm btn-outline-secondary">View All</a>
+  </div>
+  <div class="card-body p-2">
+    <div id="runs-grid" class="ag-theme-alpine"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const runsColDefs = [
+  { field: "dag_id", headerName: "DAG ID", flex: 1 },
+  { field: "dag_run_id", headerName: "Run ID", width: 220 },
+  { field: "state", headerName: "State", width: 110,
+    cellRenderer: p => {
+      const c = { success:"success", failed:"danger", running:"primary", queued:"warning" };
+      return `<span class="badge bg-${c[p.value]||'secondary'}">${p.value.toUpperCase()}</span>`;
+    }},
+  { field: "execution_date", headerName: "Execution Date", width: 180 },
+  { field: "duration_seconds", headerName: "Duration (s)", width: 130,
+    valueFormatter: p => p.value ? Number(p.value).toFixed(1) + "s" : "—" },
+  { field: "run_type", headerName: "Type", width: 110 },
+];
+
+fetch("{% url 'etl_monitor:dag_run_list' %}?format=json", { headers: { "X-Requested-With": "XMLHttpRequest" } })
+  .then(r => r.ok ? r.json() : { results: [] })
+  .then(data => {
+    agGrid.createGrid(document.querySelector("#runs-grid"), {
+      columnDefs: runsColDefs,
+      rowData: data.results || [],
+      defaultColDef: { sortable: true, filter: true, resizable: true },
+      pagination: true, paginationPageSize: 10, animateRows: true, theme: "legacy",
+    });
+  })
+  .catch(() => {
+    agGrid.createGrid(document.querySelector("#runs-grid"), {
+      columnDefs: runsColDefs, rowData: [],
+      defaultColDef: { sortable: true, filter: true, resizable: true }, theme: "legacy",
+    });
+  });
+
+function syncNow() {
+  fetch("/api/v1/etl/alerts/").then(r => r.json()).then(d => {
+    if (d.count === 0) alert("All pipelines healthy. No new alerts.");
+    else alert(`${d.count} active alert(s). Check the dashboard for details.`);
+  });
+}
+</script>
+{% endblock %}

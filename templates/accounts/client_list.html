@@ -1,0 +1,111 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}Clients{% endblock %}
+
+{% block extra_css %}
+<style>
+  #client-grid { height: 520px; }
+  .tier-badge { font-size:.75rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-people me-2 text-primary"></i>Client Management</h4>
+    <small class="text-muted">Total AUM under management: <strong>${{ total_aum|floatformat:0|intcomma }}</strong></small>
+  </div>
+  <a href="/admin/accounts/client/add/" class="btn btn-primary btn-sm">
+    <i class="bi bi-person-plus me-1"></i>Add Client
+  </a>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="card mb-3 p-3">
+  <form method="get" class="row g-2 align-items-end">
+    <div class="col-md-4">
+      <input type="text" name="q" value="{{ request.GET.q }}" class="form-control form-control-sm"
+             placeholder="Search name, ID, or email…" />
+    </div>
+    <div class="col-md-3">
+      <select name="tier" class="form-select form-select-sm">
+        <option value="">All Tiers</option>
+        {% for val, label in tiers %}
+          <option value="{{ val }}" {% if request.GET.tier == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
+    </div>
+    <div class="col-md-3 text-end">
+      <input type="text" id="grid-filter" class="form-control form-control-sm" placeholder="Quick grid filter…" />
+    </div>
+  </form>
+</div>
+
+<!-- AG Grid -->
+<div class="card">
+  <div class="card-body p-2">
+    <div id="client-grid" class="ag-theme-alpine"></div>
+  </div>
+</div>
+
+<!-- Hidden data for AG Grid -->
+<script id="client-data" type="application/json">
+[{% for c in clients %}
+  {
+    "client_id": "{{ c.client_id }}",
+    "name": "{{ c.name|escapejs }}",
+    "tier": "{{ c.get_tier_display }}",
+    "risk_profile": "{{ c.risk_profile }}",
+    "rm": "{{ c.relationship_manager.get_full_name|default:'Unassigned'|escapejs }}",
+    "kyc": {{ c.kyc_verified|yesno:"true,false" }},
+    "country": "{{ c.country|escapejs }}",
+    "onboarded": "{{ c.onboarded_date }}",
+    "detail_url": "{% url 'accounts:client_detail' c.pk %}"
+  }{% if not forloop.last %},{% endif %}
+{% endfor %}]
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const clientData = JSON.parse(document.getElementById("client-data").textContent);
+
+const colDefs = [
+  { field: "client_id", headerName: "Client ID", width: 120, pinned: "left",
+    cellRenderer: p => `<a href="${p.data.detail_url}" class="text-decoration-none fw-semibold">${p.value}</a>` },
+  { field: "name", headerName: "Client Name", flex: 1, minWidth: 180 },
+  { field: "tier", headerName: "Tier", width: 180,
+    cellRenderer: p => {
+      const colors = { "Ultra High Net Worth (>$30M)": "danger", "High Net Worth ($1M–$30M)": "primary",
+                       "Mass Affluent ($250K–$1M)": "info", "Institutional": "warning" };
+      return `<span class="badge bg-${colors[p.value]||'secondary'} tier-badge">${p.value}</span>`;
+    }},
+  { field: "risk_profile", headerName: "Risk Profile", width: 130 },
+  { field: "rm", headerName: "Relationship Manager", width: 200 },
+  { field: "kyc", headerName: "KYC Verified", width: 120,
+    cellRenderer: p => p.value
+      ? '<i class="bi bi-check-circle-fill text-success"></i>'
+      : '<i class="bi bi-x-circle-fill text-danger"></i>' },
+  { field: "country", headerName: "Country", width: 140 },
+  { field: "onboarded", headerName: "Onboarded", width: 130 },
+];
+
+const grid = agGrid.createGrid(document.querySelector("#client-grid"), {
+  columnDefs: colDefs,
+  rowData: clientData,
+  defaultColDef: { sortable: true, filter: true, resizable: true },
+  pagination: true,
+  paginationPageSize: 20,
+  animateRows: true,
+  theme: "legacy",
+});
+
+document.getElementById("grid-filter").addEventListener("input", e => {
+  grid.setGridOption("quickFilterText", e.target.value);
+});
+</script>
+{% endblock %}

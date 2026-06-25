@@ -1,0 +1,201 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Risk & Market Analytics{% endblock %}
+
+{% block extra_css %}
+<style>
+  #risk-grid { height: 400px; }
+  #candlestick-chart { width: 100%; min-height: 300px; }
+  .metric-card { border-radius: 8px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0 fw-bold"><i class="bi bi-activity me-2 text-primary"></i>Risk &amp; Market Analytics</h4>
+  <div class="d-flex gap-2 align-items-center">
+    <label class="form-label mb-0 small text-muted">Ticker:</label>
+    <input type="text" id="ticker-input" value="AAPL" class="form-control form-control-sm" style="width:100px" />
+    <select id="days-select" class="form-select form-select-sm" style="width:130px">
+      <option value="30">30 days</option>
+      <option value="90" selected>90 days</option>
+      <option value="252">1 year</option>
+    </select>
+    <button class="btn btn-sm btn-primary" onclick="loadMarketData()">
+      <i class="bi bi-search"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Risk KPIs -->
+<div class="row g-3 mb-4" id="risk-kpis">
+  {% include "analytics/_risk_kpi_card.html" with label="95% 1-Day VaR" value=kpi_var95|default:"—" icon="shield-exclamation" color="danger" %}
+  {% include "analytics/_risk_kpi_card.html" with label="Sharpe Ratio" value=kpi_sharpe|default:"—" icon="graph-up-arrow" color="success" %}
+  {% include "analytics/_risk_kpi_card.html" with label="Max Drawdown" value=kpi_maxdd|default:"—" icon="graph-down-arrow" color="warning" %}
+  {% include "analytics/_risk_kpi_card.html" with label="Annualised Vol." value=kpi_vol|default:"—" icon="bar-chart" color="info" %}
+</div>
+
+<!-- D3 Price Chart -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-8">
+    <div class="card p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="fw-semibold mb-0" id="chart-title">Price History</h6>
+        <small class="text-muted">D3.js OHLCV</small>
+      </div>
+      <div id="candlestick-chart"></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card p-3 h-100">
+      <h6 class="fw-semibold mb-2">Return Distribution</h6>
+      <div id="distribution-chart" style="min-height:260px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Plotly Dash Risk App -->
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between">
+    <span class="fw-semibold"><i class="bi bi-shield-check me-1"></i>Portfolio Risk Analytics</span>
+    <small class="text-muted">Plotly Dash — VaR, Attribution, Correlation Matrix</small>
+  </div>
+  <div class="card-body p-0">
+    {% load plotly_dash %}
+    {% plotly_app name="RiskAnalyticsApp" ratio=0.6 %}
+  </div>
+</div>
+
+<!-- Risk Metrics AG Grid -->
+<div class="card">
+  <div class="card-header"><span class="fw-semibold"><i class="bi bi-table me-1"></i>Risk Metrics Table</span></div>
+  <div class="card-body p-2">
+    <div id="risk-grid" class="ag-theme-alpine"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script id="risk-metrics-data" type="application/json">{{ risk_metrics_json|safe }}</script>
+<script>
+// ─── D3 Price Line Chart ─────────────────────────────────────
+function renderPriceChart(ticker, series) {
+  const el = document.getElementById("candlestick-chart");
+  el.innerHTML = "";
+  document.getElementById("chart-title").textContent = ticker + " — Price History";
+
+  const margin = { top: 10, right: 20, bottom: 30, left: 70 };
+  const w = el.offsetWidth - margin.left - margin.right;
+  const h = 260 - margin.top - margin.bottom;
+
+  const svg = d3.select(el).append("svg")
+    .attr("width", w + margin.left + margin.right)
+    .attr("height", h + margin.top + margin.bottom)
+    .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const parseDate = d3.timeParse("%Y-%m-%d");
+  const data = series.map(d => ({ date: parseDate(d.date), price: +d.close }));
+
+  const x = d3.scaleTime().domain(d3.extent(data, d => d.date)).range([0, w]);
+  const y = d3.scaleLinear().domain([d3.min(data, d => d.price) * 0.97, d3.max(data, d => d.price) * 1.03]).range([h, 0]);
+
+  const line = d3.line().x(d => x(d.date)).y(d => y(d.price)).curve(d3.curveMonotoneX);
+
+  svg.append("path").datum(data).attr("fill","none").attr("stroke","#0d6efd").attr("stroke-width",2).attr("d", line);
+
+  // 20-day SMA
+  const sma = data.map((d, i, arr) => {
+    const slice = arr.slice(Math.max(0, i-19), i+1);
+    return { date: d.date, price: d3.mean(slice, s => s.price) };
+  });
+  const smaLine = d3.line().x(d => x(d.date)).y(d => y(d.price)).curve(d3.curveMonotoneX);
+  svg.append("path").datum(sma).attr("fill","none").attr("stroke","#fd7e14").attr("stroke-width",1.5)
+     .attr("stroke-dasharray","4,2").attr("d", smaLine);
+
+  svg.append("g").attr("transform",`translate(0,${h})`).call(d3.axisBottom(x).ticks(6).tickFormat(d3.timeFormat("%b %d")));
+  svg.append("g").call(d3.axisLeft(y).ticks(5).tickFormat(d => "$" + d3.format(".2f")(d)));
+
+  // Legend
+  svg.append("line").attr("x1",w-120).attr("y1",5).attr("x2",w-100).attr("y2",5).attr("stroke","#0d6efd").attr("stroke-width",2);
+  svg.append("text").attr("x",w-95).attr("y",9).text("Price").attr("font-size","11px").attr("fill","#555");
+  svg.append("line").attr("x1",w-60).attr("y1",5).attr("x2",w-40).attr("y2",5).attr("stroke","#fd7e14").attr("stroke-width",1.5).attr("stroke-dasharray","4,2");
+  svg.append("text").attr("x",w-35).attr("y",9).text("20D SMA").attr("font-size","11px").attr("fill","#555");
+}
+
+// ─── D3 Return Distribution Histogram ───────────────────────
+function renderDistribution(series) {
+  const el = document.getElementById("distribution-chart");
+  el.innerHTML = "";
+  const returns = series.slice(1).map((d,i) => ((+d.close - +series[i].close) / +series[i].close * 100));
+
+  const margin = { top: 10, right: 10, bottom: 30, left: 40 };
+  const w = el.offsetWidth - margin.left - margin.right;
+  const h = 220 - margin.top - margin.bottom;
+
+  const svg = d3.select(el).append("svg")
+    .attr("width", w + margin.left + margin.right)
+    .attr("height", h + margin.top + margin.bottom)
+    .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const x = d3.scaleLinear().domain(d3.extent(returns)).nice().range([0, w]);
+  const bins = d3.bin().domain(x.domain()).thresholds(20)(returns);
+  const y = d3.scaleLinear().domain([0, d3.max(bins, d => d.length)]).range([h, 0]);
+
+  svg.selectAll("rect").data(bins).enter().append("rect")
+    .attr("x", d => x(d.x0)+1).attr("width", d => Math.max(0, x(d.x1)-x(d.x0)-1))
+    .attr("y", d => y(d.length)).attr("height", d => h - y(d.length))
+    .attr("fill", d => d.x0 < 0 ? "#dc3545" : "#198754").attr("opacity", 0.75);
+
+  svg.append("g").attr("transform",`translate(0,${h})`).call(d3.axisBottom(x).ticks(5).tickFormat(d => d + "%"));
+  svg.append("g").call(d3.axisLeft(y).ticks(4));
+}
+
+// ─── AG Grid — Risk Metrics ──────────────────────────────────
+const fmtPct = p => p.value != null ? (p.value * 100).toFixed(2) + "%" : "—";
+const fmtDec = p => p.value != null ? Number(p.value).toFixed(4) : "—";
+const riskColDefs = [
+  { field: "scope", headerName: "Scope", width: 110 },
+  { field: "reference_id", headerName: "Reference", flex: 1, cellRenderer: p => `<strong>${p.value}</strong>` },
+  { field: "calculation_date", headerName: "Calc. Date", width: 130 },
+  { field: "var_95_1d", headerName: "VaR 95%", width: 110, type: "numericColumn",
+    valueFormatter: fmtPct, cellStyle: p => p.value != null ? { color: "#dc3545" } : {} },
+  { field: "sharpe_ratio", headerName: "Sharpe", width: 100, type: "numericColumn", valueFormatter: fmtDec },
+  { field: "max_drawdown", headerName: "Max DD", width: 110, type: "numericColumn",
+    valueFormatter: fmtPct, cellStyle: { color: "#dc3545" } },
+  { field: "annualised_volatility", headerName: "Ann. Vol.", width: 110, type: "numericColumn", valueFormatter: fmtPct },
+  { field: "beta", headerName: "Beta", width: 90, type: "numericColumn", valueFormatter: fmtDec },
+];
+
+const riskGridData = JSON.parse(document.getElementById("risk-metrics-data").textContent || "[]");
+agGrid.createGrid(document.querySelector("#risk-grid"), {
+  columnDefs: riskColDefs,
+  rowData: riskGridData,
+  defaultColDef: { sortable: true, filter: true, resizable: true },
+  pagination: true, paginationPageSize: 10, animateRows: true, theme: "legacy",
+});
+
+// ─── Load market data from Django API ───────────────────────
+function loadMarketData() {
+  const ticker = document.getElementById("ticker-input").value.toUpperCase();
+  const days = document.getElementById("days-select").value;
+  fetch(`{% url 'analytics:market_data_api' ticker='__TICKER__' %}`.replace('__TICKER__', ticker) + `?days=${days}`)
+    .then(r => r.json())
+    .then(data => {
+      if (data.data && data.data.length) {
+        renderPriceChart(ticker, data.data);
+        renderDistribution(data.data);
+      } else {
+        document.getElementById("candlestick-chart").innerHTML =
+          '<div class="text-muted text-center py-5">No data available for ' + ticker + '</div>';
+      }
+    })
+    .catch(() => {
+      document.getElementById("candlestick-chart").innerHTML =
+        '<div class="text-warning text-center py-5">Market data service unavailable</div>';
+    });
+}
+
+document.addEventListener("DOMContentLoaded", loadMarketData);
+</script>
+{% endblock %}

@@ -1,0 +1,257 @@
+# ──────────────────────────────────────────────────────────────
+# XYZ Platform — GitHub Actions CI/CD Pipeline
+# Stages: Lint → Test → Build → Deploy (staging) → Deploy (prod)
+# ──────────────────────────────────────────────────────────────
+name: XYZ Platform CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  PYTHON_VERSION: "3.11"
+  IMAGE_NAME: ghcr.io/${{ github.repository }}/xyz-platform
+
+jobs:
+  # ── 1. Lint & Format ─────────────────────────────────────
+  lint:
+    name: Lint & Format Check
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install linting tools
+        run: pip install black flake8 isort
+
+      - name: Black format check
+        run: black --check --diff .
+
+      - name: Flake8 lint
+        run: flake8 . --max-line-length=120 --exclude=migrations,venv,.venv
+
+      - name: isort check
+        run: isort --check-only --diff .
+
+  # ── 2. Unit & Integration Tests ───────────────────────────
+  test:
+    name: Run Tests
+    runs-on: ubuntu-22.04
+    needs: lint
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: ${{ vars.CI_DB_NAME }}
+          POSTGRES_USER: ${{ secrets.CI_DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.CI_DB_PASSWORD }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
+        ports:
+          - 6379:6379
+
+    env:
+      SECRET_KEY: ${{ secrets.CI_SECRET_KEY }}
+      DEBUG: "True"
+      DB_NAME: ${{ vars.CI_DB_NAME }}
+      DB_USER: ${{ secrets.CI_DB_USER }}
+      DB_PASSWORD: ${{ secrets.CI_DB_PASSWORD }}
+      DB_HOST: localhost
+      DB_PORT: "5432"
+      REDIS_URL: redis://localhost:6379/0
+      DJANGO_SETTINGS_MODULE: config.settings.development
+      AIRFLOW_API_URL: http://localhost:8080/api/v1
+      AIRFLOW_API_USER: ${{ secrets.CI_AIRFLOW_USER }}
+      AIRFLOW_API_PASSWORD: ${{ secrets.CI_AIRFLOW_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements/development.txt
+
+      - name: Run Django migrations
+        run: python manage.py migrate --noinput
+
+      - name: Run tests with coverage
+        run: |
+          pytest \
+            --cov=apps \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --tb=short \
+            -q
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          flags: unittests
+          fail_ci_if_error: false
+
+  # ── 3. Build & Push Docker Image ──────────────────────────
+  build:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-22.04
+    needs: test
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU (multi-arch)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=,suffix=,format=short
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push Django image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/django/Dockerfile
+          target: runtime
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── 4. Deploy to Staging ──────────────────────────────────
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-22.04
+    needs: build
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: staging
+      url: https://xyz-staging.internal.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to staging server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:     ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key:      ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            cd /opt/xyz_platform
+            git pull origin develop
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --no-build
+            docker compose exec -T django python manage.py migrate --noinput
+            docker compose exec -T django python manage.py collectstatic --noinput
+            echo "Staging deployment complete: $(date)"
+
+  # ── 5. Deploy to Production ───────────────────────────────
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-22.04
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://xyz.internal.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to production server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:     ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key:      ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /opt/xyz_platform
+            git pull origin main
+
+            # Blue-green: pull new image while old is serving
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+
+            # Zero-downtime rolling restart
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d \
+              --scale django=2 --no-build
+
+            # Run migrations (idempotent)
+            docker compose exec -T django python manage.py migrate --noinput
+            docker compose exec -T django python manage.py collectstatic --noinput
+
+            # Scale back to single instance after health check
+            sleep 15
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+              up -d --scale django=1 --no-build
+
+            echo "Production deployment complete: $(date)"
+
+      - name: Notify Slack on success
+        if: success()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "✅ XYZ Platform deployed to production successfully — ${{ github.sha }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Slack on failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "❌ XYZ Platform production deployment FAILED — ${{ github.sha }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

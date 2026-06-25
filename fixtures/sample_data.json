@@ -1,0 +1,1364 @@
+[
+    {
+        "model":  "auth.user",
+        "pk":  1,
+        "fields":  {
+                       "username":  "admin",
+                       "first_name":  "Admin",
+                       "last_name":  "User",
+                       "email":  "admin@xyz.com",
+                       "is_staff":  true,
+                       "is_superuser":  true,
+                       "is_active":  true,
+                       "password":  "pbkdf2_sha256$600000$xzwh4laqcuMnWWvN9mEqDa$Wo9LyGnEOi/G60x1rUY2VLGnCweITMqT6qidJLjUWUs=",
+                       "date_joined":  "2024-01-02T09:00:00Z"
+                   }
+    },
+    {
+        "model":  "auth.user",
+        "pk":  2,
+        "fields":  {
+                       "username":  "jmorgan",
+                       "first_name":  "James",
+                       "last_name":  "Morgan",
+                       "email":  "jmorgan@xyz.com",
+                       "is_staff":  true,
+                       "is_superuser":  false,
+                       "is_active":  true,
+                       "password":  "pbkdf2_sha256$600000$xzwh4laqcuMnWWvN9mEqDa$Wo9LyGnEOi/G60x1rUY2VLGnCweITMqT6qidJLjUWUs=",
+                       "date_joined":  "2024-01-15T09:00:00Z"
+                   }
+    },
+    {
+        "model":  "auth.user",
+        "pk":  3,
+        "fields":  {
+                       "username":  "swilliams",
+                       "first_name":  "Sarah",
+                       "last_name":  "Williams",
+                       "email":  "swilliams@xyz.com",
+                       "is_staff":  true,
+                       "is_superuser":  false,
+                       "is_active":  true,
+                       "password":  "pbkdf2_sha256$600000$xzwh4laqcuMnWWvN9mEqDa$Wo9LyGnEOi/G60x1rUY2VLGnCweITMqT6qidJLjUWUs=",
+                       "date_joined":  "2024-02-01T09:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.client",
+        "pk":  1,
+        "fields":  {
+                       "client_id":  "XYZ-001",
+                       "name":  "Worthington Family Trust",
+                       "email":  "trust@worthingtonfamily.com",
+                       "phone":  "+1-212-555-0101",
+                       "tier":  "UHNW",
+                       "relationship_manager":  2,
+                       "onboarded_date":  "2018-03-15",
+                       "kyc_verified":  true,
+                       "kyc_verified_date":  "2024-11-20",
+                       "risk_profile":  "MODERATE",
+                       "country":  "United States",
+                       "notes":  "Multi-generational family office. Annual review in Q4.",
+                       "is_active":  true,
+                       "created_at":  "2018-03-15T09:00:00Z",
+                       "updated_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.client",
+        "pk":  2,
+        "fields":  {
+                       "client_id":  "XYZ-002",
+                       "name":  "Elena Vasquez",
+                       "email":  "evasquez@gmail.com",
+                       "phone":  "+1-305-555-0202",
+                       "tier":  "HNW",
+                       "relationship_manager":  2,
+                       "onboarded_date":  "2020-07-10",
+                       "kyc_verified":  true,
+                       "kyc_verified_date":  "2025-01-15",
+                       "risk_profile":  "AGGRESSIVE",
+                       "country":  "United States",
+                       "notes":  "Tech executive. Prefers growth-oriented allocation.",
+                       "is_active":  true,
+                       "created_at":  "2020-07-10T09:00:00Z",
+                       "updated_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.client",
+        "pk":  3,
+        "fields":  {
+                       "client_id":  "XYZ-003",
+                       "name":  "Harrington Endowment Fund",
+                       "email":  "cfo@harringtonfund.org",
+                       "phone":  "+1-617-555-0303",
+                       "tier":  "INST",
+                       "relationship_manager":  3,
+                       "onboarded_date":  "2015-09-01",
+                       "kyc_verified":  true,
+                       "kyc_verified_date":  "2025-02-28",
+                       "risk_profile":  "CONSERVATIVE",
+                       "country":  "United States",
+                       "notes":  "University endowment. 5% annual spending policy. ESG mandate.",
+                       "is_active":  true,
+                       "created_at":  "2015-09-01T09:00:00Z",
+                       "updated_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.client",
+        "pk":  4,
+        "fields":  {
+                       "client_id":  "XYZ-004",
+                       "name":  "David Chen",
+                       "email":  "dchen@proton.me",
+                       "phone":  "+1-415-555-0404",
+                       "tier":  "HNW",
+                       "relationship_manager":  3,
+                       "onboarded_date":  "2022-01-20",
+                       "kyc_verified":  true,
+                       "kyc_verified_date":  "2025-03-10",
+                       "risk_profile":  "VERY_AGGRESSIVE",
+                       "country":  "United States",
+                       "notes":  "Venture-backed founder. Concentrated stock position in NVDA.",
+                       "is_active":  true,
+                       "created_at":  "2022-01-20T09:00:00Z",
+                       "updated_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.client",
+        "pk":  5,
+        "fields":  {
+                       "client_id":  "XYZ-005",
+                       "name":  "Margaret Thornton",
+                       "email":  "mthornton@outlook.com",
+                       "phone":  "+1-203-555-0505",
+                       "tier":  "MA",
+                       "relationship_manager":  2,
+                       "onboarded_date":  "2023-06-01",
+                       "kyc_verified":  true,
+                       "kyc_verified_date":  "2025-04-01",
+                       "risk_profile":  "CONSERVATIVE",
+                       "country":  "United States",
+                       "notes":  "Retired educator. Income-focused strategy.",
+                       "is_active":  true,
+                       "created_at":  "2023-06-01T09:00:00Z",
+                       "updated_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.account",
+        "pk":  1,
+        "fields":  {
+                       "account_number":  "WFT-100001",
+                       "client":  1,
+                       "account_type":  "TRUST",
+                       "inception_date":  "2018-03-15",
+                       "benchmark":  "60/40 Balanced",
+                       "base_currency":  "USD",
+                       "market_value":  "45250000.00",
+                       "cash_balance":  "2150000.00",
+                       "ytd_return":  "0.0842",
+                       "is_active":  true,
+                       "created_at":  "2018-03-15T09:00:00Z",
+                       "updated_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.account",
+        "pk":  2,
+        "fields":  {
+                       "account_number":  "WFT-100002",
+                       "client":  1,
+                       "account_type":  "DISC",
+                       "inception_date":  "2019-06-01",
+                       "benchmark":  "S\u0026P 500",
+                       "base_currency":  "USD",
+                       "market_value":  "12800000.00",
+                       "cash_balance":  "480000.00",
+                       "ytd_return":  "0.1235",
+                       "is_active":  true,
+                       "created_at":  "2025-06-20T12:00:00Z",
+                       "updated_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.account",
+        "pk":  3,
+        "fields":  {
+                       "account_number":  "EV-200001",
+                       "client":  2,
+                       "account_type":  "DISC",
+                       "inception_date":  "2020-07-10",
+                       "benchmark":  "NASDAQ 100",
+                       "base_currency":  "USD",
+                       "market_value":  "8500000.00",
+                       "cash_balance":  "320000.00",
+                       "ytd_return":  "0.1567",
+                       "is_active":  true,
+                       "created_at":  "2025-06-20T12:00:00Z",
+                       "updated_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.account",
+        "pk":  4,
+        "fields":  {
+                       "account_number":  "EV-200002",
+                       "client":  2,
+                       "account_type":  "RET",
+                       "inception_date":  "2020-08-01",
+                       "benchmark":  "S\u0026P 500",
+                       "base_currency":  "USD",
+                       "market_value":  "1250000.00",
+                       "cash_balance":  "50000.00",
+                       "ytd_return":  "0.1102",
+                       "is_active":  true,
+                       "created_at":  "2025-06-20T12:00:00Z",
+                       "updated_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.account",
+        "pk":  5,
+        "fields":  {
+                       "account_number":  "HEF-300001",
+                       "client":  3,
+                       "account_type":  "DISC",
+                       "inception_date":  "2015-09-01",
+                       "benchmark":  "70/30 Conservative",
+                       "base_currency":  "USD",
+                       "market_value":  "185000000.00",
+                       "cash_balance":  "9250000.00",
+                       "ytd_return":  "0.0623",
+                       "is_active":  true,
+                       "created_at":  "2025-06-20T12:00:00Z",
+                       "updated_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.account",
+        "pk":  6,
+        "fields":  {
+                       "account_number":  "DC-400001",
+                       "client":  4,
+                       "account_type":  "ADV",
+                       "inception_date":  "2022-01-20",
+                       "benchmark":  "NASDAQ 100",
+                       "base_currency":  "USD",
+                       "market_value":  "6200000.00",
+                       "cash_balance":  "180000.00",
+                       "ytd_return":  "0.2015",
+                       "is_active":  true,
+                       "created_at":  "2025-06-20T12:00:00Z",
+                       "updated_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.account",
+        "pk":  7,
+        "fields":  {
+                       "account_number":  "MT-500001",
+                       "client":  5,
+                       "account_type":  "ADV",
+                       "inception_date":  "2023-06-01",
+                       "benchmark":  "Bloomberg US Agg",
+                       "base_currency":  "USD",
+                       "market_value":  "475000.00",
+                       "cash_balance":  "25000.00",
+                       "ytd_return":  "0.0312",
+                       "is_active":  true,
+                       "created_at":  "2025-06-20T12:00:00Z",
+                       "updated_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.holding",
+        "pk":  1,
+        "fields":  {
+                       "account":  1,
+                       "ticker":  "AAPL",
+                       "security_name":  "Apple Inc.",
+                       "asset_class":  "EQ",
+                       "quantity":  "15000.000000",
+                       "cost_basis":  "142.5000",
+                       "market_price":  "198.1100",
+                       "market_value":  "2971650.00",
+                       "unrealized_pnl":  "834150.00",
+                       "weight":  "0.0657",
+                       "last_updated":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.holding",
+        "pk":  2,
+        "fields":  {
+                       "account":  1,
+                       "ticker":  "MSFT",
+                       "security_name":  "Microsoft Corp.",
+                       "asset_class":  "EQ",
+                       "quantity":  "10000.000000",
+                       "cost_basis":  "285.2000",
+                       "market_price":  "415.5600",
+                       "market_value":  "4155600.00",
+                       "unrealized_pnl":  "1303600.00",
+                       "weight":  "0.0919",
+                       "last_updated":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.holding",
+        "pk":  3,
+        "fields":  {
+                       "account":  1,
+                       "ticker":  "BND",
+                       "security_name":  "Vanguard Total Bond Market ETF",
+                       "asset_class":  "FI",
+                       "quantity":  "120000.000000",
+                       "cost_basis":  "74.5000",
+                       "market_price":  "72.8500",
+                       "market_value":  "8742000.00",
+                       "unrealized_pnl":  "-198000.00",
+                       "weight":  "0.1932",
+                       "last_updated":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.holding",
+        "pk":  4,
+        "fields":  {
+                       "account":  1,
+                       "ticker":  "TLT",
+                       "security_name":  "iShares 20+ Year Treasury Bond ETF",
+                       "asset_class":  "FI",
+                       "quantity":  "60000.000000",
+                       "cost_basis":  "98.2000",
+                       "market_price":  "91.4500",
+                       "market_value":  "5487000.00",
+                       "unrealized_pnl":  "-405000.00",
+                       "weight":  "0.1213",
+                       "last_updated":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.holding",
+        "pk":  5,
+        "fields":  {
+                       "account":  1,
+                       "ticker":  "BX",
+                       "security_name":  "Blackstone Inc.",
+                       "asset_class":  "ALT",
+                       "quantity":  "25000.000000",
+                       "cost_basis":  "95.3000",
+                       "market_price":  "142.7500",
+                       "market_value":  "3568750.00",
+                       "unrealized_pnl":  "1186250.00",
+                       "weight":  "0.0789",
+                       "last_updated":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.holding",
+        "pk":  6,
+        "fields":  {
+                       "account":  1,
+                       "ticker":  "JPM",
+                       "security_name":  "JPMorgan Chase \u0026 Co.",
+                       "asset_class":  "EQ",
+                       "quantity":  "18000.000000",
+                       "cost_basis":  "138.4000",
+                       "market_price":  "205.8200",
+                       "market_value":  "3704760.00",
+                       "unrealized_pnl":  "1213560.00",
+                       "weight":  "0.0819",
+                       "last_updated":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.holding",
+        "pk":  7,
+        "fields":  {
+                       "account":  3,
+                       "ticker":  "NVDA",
+                       "security_name":  "NVIDIA Corp.",
+                       "asset_class":  "EQ",
+                       "quantity":  "5000.000000",
+                       "cost_basis":  "220.0000",
+                       "market_price":  "875.3500",
+                       "market_value":  "4376750.00",
+                       "unrealized_pnl":  "3276750.00",
+                       "weight":  "0.5149",
+                       "last_updated":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.holding",
+        "pk":  8,
+        "fields":  {
+                       "account":  3,
+                       "ticker":  "GOOGL",
+                       "security_name":  "Alphabet Inc. Class A",
+                       "asset_class":  "EQ",
+                       "quantity":  "8000.000000",
+                       "cost_basis":  "112.5000",
+                       "market_price":  "176.2400",
+                       "market_value":  "1409920.00",
+                       "unrealized_pnl":  "509920.00",
+                       "weight":  "0.1659",
+                       "last_updated":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.holding",
+        "pk":  9,
+        "fields":  {
+                       "account":  3,
+                       "ticker":  "AMZN",
+                       "security_name":  "Amazon.com Inc.",
+                       "asset_class":  "EQ",
+                       "quantity":  "6000.000000",
+                       "cost_basis":  "128.3000",
+                       "market_price":  "185.9200",
+                       "market_value":  "1115520.00",
+                       "unrealized_pnl":  "345720.00",
+                       "weight":  "0.1312",
+                       "last_updated":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.holding",
+        "pk":  10,
+        "fields":  {
+                       "account":  5,
+                       "ticker":  "AGG",
+                       "security_name":  "iShares Core US Aggregate Bond ETF",
+                       "asset_class":  "FI",
+                       "quantity":  "500000.000000",
+                       "cost_basis":  "100.2500",
+                       "market_price":  "98.7500",
+                       "market_value":  "49375000.00",
+                       "unrealized_pnl":  "-750000.00",
+                       "weight":  "0.2669",
+                       "last_updated":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.holding",
+        "pk":  11,
+        "fields":  {
+                       "account":  5,
+                       "ticker":  "VTI",
+                       "security_name":  "Vanguard Total Stock Market ETF",
+                       "asset_class":  "EQ",
+                       "quantity":  "200000.000000",
+                       "cost_basis":  "195.5000",
+                       "market_price":  "262.4000",
+                       "market_value":  "52480000.00",
+                       "unrealized_pnl":  "13380000.00",
+                       "weight":  "0.2837",
+                       "last_updated":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.holding",
+        "pk":  12,
+        "fields":  {
+                       "account":  5,
+                       "ticker":  "VXUS",
+                       "security_name":  "Vanguard Total International Stock ETF",
+                       "asset_class":  "EQ",
+                       "quantity":  "300000.000000",
+                       "cost_basis":  "54.2000",
+                       "market_price":  "58.7500",
+                       "market_value":  "17625000.00",
+                       "unrealized_pnl":  "1365000.00",
+                       "weight":  "0.0953",
+                       "last_updated":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.holding",
+        "pk":  13,
+        "fields":  {
+                       "account":  6,
+                       "ticker":  "NVDA",
+                       "security_name":  "NVIDIA Corp.",
+                       "asset_class":  "EQ",
+                       "quantity":  "3500.000000",
+                       "cost_basis":  "180.0000",
+                       "market_price":  "875.3500",
+                       "market_value":  "3063725.00",
+                       "unrealized_pnl":  "2433725.00",
+                       "weight":  "0.4941",
+                       "last_updated":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.holding",
+        "pk":  14,
+        "fields":  {
+                       "account":  7,
+                       "ticker":  "SCHD",
+                       "security_name":  "Schwab US Dividend Equity ETF",
+                       "asset_class":  "EQ",
+                       "quantity":  "2500.000000",
+                       "cost_basis":  "72.5000",
+                       "market_price":  "78.4200",
+                       "market_value":  "196050.00",
+                       "unrealized_pnl":  "14800.00",
+                       "weight":  "0.4127",
+                       "last_updated":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.holding",
+        "pk":  15,
+        "fields":  {
+                       "account":  7,
+                       "ticker":  "VCIT",
+                       "security_name":  "Vanguard Intermediate-Term Corporate Bond ETF",
+                       "asset_class":  "FI",
+                       "quantity":  "3000.000000",
+                       "cost_basis":  "82.1000",
+                       "market_price":  "80.5500",
+                       "market_value":  "241650.00",
+                       "unrealized_pnl":  "-4650.00",
+                       "weight":  "0.5088",
+                       "last_updated":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.transaction",
+        "pk":  1,
+        "fields":  {
+                       "account":  1,
+                       "transaction_type":  "BUY",
+                       "ticker":  "MSFT",
+                       "security_name":  "Microsoft Corp.",
+                       "trade_date":  "2025-06-02",
+                       "settlement_date":  "2025-06-04",
+                       "quantity":  "500.000000",
+                       "price":  "415.5600",
+                       "gross_amount":  "207780.00",
+                       "fees":  "12.50",
+                       "net_amount":  "207792.50",
+                       "currency":  "USD",
+                       "reference_number":  "TXN-2025-0601-001",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.transaction",
+        "pk":  2,
+        "fields":  {
+                       "account":  1,
+                       "transaction_type":  "DIV",
+                       "ticker":  "AAPL",
+                       "security_name":  "Apple Inc.",
+                       "trade_date":  "2025-05-15",
+                       "settlement_date":  "2025-05-15",
+                       "quantity":  null,
+                       "price":  null,
+                       "gross_amount":  "3750.00",
+                       "fees":  "0.00",
+                       "net_amount":  "3750.00",
+                       "currency":  "USD",
+                       "reference_number":  "TXN-2025-0515-001",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.transaction",
+        "pk":  3,
+        "fields":  {
+                       "account":  3,
+                       "transaction_type":  "BUY",
+                       "ticker":  "GOOGL",
+                       "security_name":  "Alphabet Inc. Class A",
+                       "trade_date":  "2025-06-10",
+                       "settlement_date":  "2025-06-12",
+                       "quantity":  "2000.000000",
+                       "price":  "176.2400",
+                       "gross_amount":  "352480.00",
+                       "fees":  "8.75",
+                       "net_amount":  "352488.75",
+                       "currency":  "USD",
+                       "reference_number":  "TXN-2025-0610-001",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.transaction",
+        "pk":  4,
+        "fields":  {
+                       "account":  5,
+                       "transaction_type":  "SELL",
+                       "ticker":  "AGG",
+                       "security_name":  "iShares Core US Aggregate Bond ETF",
+                       "trade_date":  "2025-06-05",
+                       "settlement_date":  "2025-06-09",
+                       "quantity":  "10000.000000",
+                       "price":  "98.7500",
+                       "gross_amount":  "987500.00",
+                       "fees":  "25.00",
+                       "net_amount":  "987475.00",
+                       "currency":  "USD",
+                       "reference_number":  "TXN-2025-0605-001",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.transaction",
+        "pk":  5,
+        "fields":  {
+                       "account":  5,
+                       "transaction_type":  "FEE",
+                       "ticker":  "",
+                       "security_name":  "",
+                       "trade_date":  "2025-06-01",
+                       "settlement_date":  "2025-06-01",
+                       "quantity":  null,
+                       "price":  null,
+                       "gross_amount":  "115625.00",
+                       "fees":  "0.00",
+                       "net_amount":  "115625.00",
+                       "currency":  "USD",
+                       "reference_number":  "TXN-2025-0601-FEE-001",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.transaction",
+        "pk":  6,
+        "fields":  {
+                       "account":  6,
+                       "transaction_type":  "BUY",
+                       "ticker":  "NVDA",
+                       "security_name":  "NVIDIA Corp.",
+                       "trade_date":  "2025-05-28",
+                       "settlement_date":  "2025-05-30",
+                       "quantity":  "200.000000",
+                       "price":  "850.0000",
+                       "gross_amount":  "170000.00",
+                       "fees":  "10.00",
+                       "net_amount":  "170010.00",
+                       "currency":  "USD",
+                       "reference_number":  "TXN-2025-0528-001",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.transaction",
+        "pk":  7,
+        "fields":  {
+                       "account":  7,
+                       "transaction_type":  "DEP",
+                       "ticker":  "",
+                       "security_name":  "",
+                       "trade_date":  "2025-06-15",
+                       "settlement_date":  "2025-06-15",
+                       "quantity":  null,
+                       "price":  null,
+                       "gross_amount":  "25000.00",
+                       "fees":  "0.00",
+                       "net_amount":  "25000.00",
+                       "currency":  "USD",
+                       "reference_number":  "TXN-2025-0615-001",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "accounts.transaction",
+        "pk":  8,
+        "fields":  {
+                       "account":  1,
+                       "transaction_type":  "INT",
+                       "ticker":  "BND",
+                       "security_name":  "Vanguard Total Bond Market ETF",
+                       "trade_date":  "2025-06-01",
+                       "settlement_date":  "2025-06-01",
+                       "quantity":  null,
+                       "price":  null,
+                       "gross_amount":  "18200.00",
+                       "fees":  "0.00",
+                       "net_amount":  "18200.00",
+                       "currency":  "USD",
+                       "reference_number":  "TXN-2025-0601-INT-001",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "portfolio.portfoliosnapshot",
+        "pk":  1,
+        "fields":  {
+                       "snapshot_date":  "2025-06-20",
+                       "total_aum":  "259475000.00",
+                       "equity_value":  "142150000.00",
+                       "fixed_income_value":  "78500000.00",
+                       "alternatives_value":  "24575000.00",
+                       "cash_value":  "14250000.00",
+                       "daily_pnl":  "1850000.00",
+                       "daily_return_pct":  "0.7130",
+                       "ytd_return_pct":  "8.4500",
+                       "client_count":  5,
+                       "account_count":  7,
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "portfolio.portfoliosnapshot",
+        "pk":  2,
+        "fields":  {
+                       "snapshot_date":  "2025-06-19",
+                       "total_aum":  "257625000.00",
+                       "equity_value":  "141200000.00",
+                       "fixed_income_value":  "78100000.00",
+                       "alternatives_value":  "24325000.00",
+                       "cash_value":  "14000000.00",
+                       "daily_pnl":  "-980000.00",
+                       "daily_return_pct":  "-0.3800",
+                       "ytd_return_pct":  "7.6800",
+                       "client_count":  5,
+                       "account_count":  7,
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "portfolio.portfoliosnapshot",
+        "pk":  3,
+        "fields":  {
+                       "snapshot_date":  "2025-06-18",
+                       "total_aum":  "258605000.00",
+                       "equity_value":  "141800000.00",
+                       "fixed_income_value":  "78300000.00",
+                       "alternatives_value":  "24405000.00",
+                       "cash_value":  "14100000.00",
+                       "daily_pnl":  "2125000.00",
+                       "daily_return_pct":  "0.8280",
+                       "ytd_return_pct":  "8.0900",
+                       "client_count":  5,
+                       "account_count":  7,
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "portfolio.portfoliosnapshot",
+        "pk":  4,
+        "fields":  {
+                       "snapshot_date":  "2025-06-17",
+                       "total_aum":  "256480000.00",
+                       "equity_value":  "140500000.00",
+                       "fixed_income_value":  "77900000.00",
+                       "alternatives_value":  "24180000.00",
+                       "cash_value":  "13900000.00",
+                       "daily_pnl":  "425000.00",
+                       "daily_return_pct":  "0.1660",
+                       "ytd_return_pct":  "7.2100",
+                       "client_count":  5,
+                       "account_count":  7,
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "portfolio.portfoliosnapshot",
+        "pk":  5,
+        "fields":  {
+                       "snapshot_date":  "2025-06-16",
+                       "total_aum":  "256055000.00",
+                       "equity_value":  "140200000.00",
+                       "fixed_income_value":  "77800000.00",
+                       "alternatives_value":  "24105000.00",
+                       "cash_value":  "13950000.00",
+                       "daily_pnl":  "-1350000.00",
+                       "daily_return_pct":  "-0.5240",
+                       "ytd_return_pct":  "7.0300",
+                       "client_count":  5,
+                       "account_count":  7,
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "portfolio.assetallocationtarget",
+        "pk":  1,
+        "fields":  {
+                       "risk_profile":  "CONSERVATIVE",
+                       "equity_target_pct":  "30.00",
+                       "fixed_income_target_pct":  "50.00",
+                       "alternatives_target_pct":  "10.00",
+                       "cash_target_pct":  "10.00",
+                       "rebalance_threshold_pct":  "5.00",
+                       "effective_date":  "2025-01-01",
+                       "updated_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "portfolio.assetallocationtarget",
+        "pk":  2,
+        "fields":  {
+                       "risk_profile":  "MODERATE",
+                       "equity_target_pct":  "50.00",
+                       "fixed_income_target_pct":  "30.00",
+                       "alternatives_target_pct":  "15.00",
+                       "cash_target_pct":  "5.00",
+                       "rebalance_threshold_pct":  "5.00",
+                       "effective_date":  "2025-01-01",
+                       "updated_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "portfolio.assetallocationtarget",
+        "pk":  3,
+        "fields":  {
+                       "risk_profile":  "AGGRESSIVE",
+                       "equity_target_pct":  "70.00",
+                       "fixed_income_target_pct":  "15.00",
+                       "alternatives_target_pct":  "10.00",
+                       "cash_target_pct":  "5.00",
+                       "rebalance_threshold_pct":  "5.00",
+                       "effective_date":  "2025-01-01",
+                       "updated_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "portfolio.assetallocationtarget",
+        "pk":  4,
+        "fields":  {
+                       "risk_profile":  "VERY_AGGRESSIVE",
+                       "equity_target_pct":  "85.00",
+                       "fixed_income_target_pct":  "5.00",
+                       "alternatives_target_pct":  "5.00",
+                       "cash_target_pct":  "5.00",
+                       "rebalance_threshold_pct":  "3.00",
+                       "effective_date":  "2025-01-01",
+                       "updated_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "analytics.marketdata",
+        "pk":  1,
+        "fields":  {
+                       "ticker":  "AAPL",
+                       "security_name":  "Apple Inc.",
+                       "price_date":  "2025-06-20",
+                       "open_price":  "196.5000",
+                       "high_price":  "199.2000",
+                       "low_price":  "195.8000",
+                       "close_price":  "198.1100",
+                       "adjusted_close":  "198.1100",
+                       "volume":  52340000,
+                       "currency":  "USD",
+                       "source":  "BLOOMBERG",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "analytics.marketdata",
+        "pk":  2,
+        "fields":  {
+                       "ticker":  "MSFT",
+                       "security_name":  "Microsoft Corp.",
+                       "price_date":  "2025-06-20",
+                       "open_price":  "413.2000",
+                       "high_price":  "417.8000",
+                       "low_price":  "412.5000",
+                       "close_price":  "415.5600",
+                       "adjusted_close":  "415.5600",
+                       "volume":  28150000,
+                       "currency":  "USD",
+                       "source":  "BLOOMBERG",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "analytics.marketdata",
+        "pk":  3,
+        "fields":  {
+                       "ticker":  "NVDA",
+                       "security_name":  "NVIDIA Corp.",
+                       "price_date":  "2025-06-20",
+                       "open_price":  "868.0000",
+                       "high_price":  "880.5000",
+                       "low_price":  "865.2000",
+                       "close_price":  "875.3500",
+                       "adjusted_close":  "875.3500",
+                       "volume":  41200000,
+                       "currency":  "USD",
+                       "source":  "BLOOMBERG",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "analytics.marketdata",
+        "pk":  4,
+        "fields":  {
+                       "ticker":  "GOOGL",
+                       "security_name":  "Alphabet Inc. Class A",
+                       "price_date":  "2025-06-20",
+                       "open_price":  "174.8000",
+                       "high_price":  "177.5000",
+                       "low_price":  "174.1000",
+                       "close_price":  "176.2400",
+                       "adjusted_close":  "176.2400",
+                       "volume":  22850000,
+                       "currency":  "USD",
+                       "source":  "BLOOMBERG",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "analytics.marketdata",
+        "pk":  5,
+        "fields":  {
+                       "ticker":  "JPM",
+                       "security_name":  "JPMorgan Chase \u0026 Co.",
+                       "price_date":  "2025-06-20",
+                       "open_price":  "203.5000",
+                       "high_price":  "206.8000",
+                       "low_price":  "202.9000",
+                       "close_price":  "205.8200",
+                       "adjusted_close":  "205.8200",
+                       "volume":  12400000,
+                       "currency":  "USD",
+                       "source":  "BLOOMBERG",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "analytics.marketdata",
+        "pk":  6,
+        "fields":  {
+                       "ticker":  "AMZN",
+                       "security_name":  "Amazon.com Inc.",
+                       "price_date":  "2025-06-20",
+                       "open_price":  "184.2000",
+                       "high_price":  "187.1000",
+                       "low_price":  "183.5000",
+                       "close_price":  "185.9200",
+                       "adjusted_close":  "185.9200",
+                       "volume":  35600000,
+                       "currency":  "USD",
+                       "source":  "BLOOMBERG",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "analytics.riskmetric",
+        "pk":  1,
+        "fields":  {
+                       "scope":  "PORTFOLIO",
+                       "reference_id":  "FIRM-WIDE",
+                       "calculation_date":  "2025-06-20",
+                       "var_95_1d":  "1.2500",
+                       "var_99_1d":  "1.8200",
+                       "cvar_95_1d":  "1.6800",
+                       "annualised_return":  "0.0845",
+                       "annualised_volatility":  "0.1230",
+                       "sharpe_ratio":  "0.5100",
+                       "sortino_ratio":  "0.7200",
+                       "max_drawdown":  "-0.0820",
+                       "beta":  "0.8500",
+                       "alpha":  "0.0120",
+                       "information_ratio":  "0.3500",
+                       "tracking_error":  "0.0340",
+                       "lookback_days":  252,
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "analytics.riskmetric",
+        "pk":  2,
+        "fields":  {
+                       "scope":  "ACCOUNT",
+                       "reference_id":  "WFT-100001",
+                       "calculation_date":  "2025-06-20",
+                       "var_95_1d":  "1.0800",
+                       "var_99_1d":  "1.5500",
+                       "cvar_95_1d":  "1.4200",
+                       "annualised_return":  "0.0842",
+                       "annualised_volatility":  "0.1050",
+                       "sharpe_ratio":  "0.5900",
+                       "sortino_ratio":  "0.8100",
+                       "max_drawdown":  "-0.0650",
+                       "beta":  "0.7200",
+                       "alpha":  "0.0180",
+                       "information_ratio":  "0.4200",
+                       "tracking_error":  "0.0280",
+                       "lookback_days":  252,
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "analytics.riskmetric",
+        "pk":  3,
+        "fields":  {
+                       "scope":  "ACCOUNT",
+                       "reference_id":  "EV-200001",
+                       "calculation_date":  "2025-06-20",
+                       "var_95_1d":  "2.1500",
+                       "var_99_1d":  "3.1200",
+                       "cvar_95_1d":  "2.8500",
+                       "annualised_return":  "0.1567",
+                       "annualised_volatility":  "0.2250",
+                       "sharpe_ratio":  "0.5800",
+                       "sortino_ratio":  "0.7500",
+                       "max_drawdown":  "-0.1520",
+                       "beta":  "1.3500",
+                       "alpha":  "0.0250",
+                       "information_ratio":  "0.2800",
+                       "tracking_error":  "0.0580",
+                       "lookback_days":  252,
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "analytics.riskmetric",
+        "pk":  4,
+        "fields":  {
+                       "scope":  "ACCOUNT",
+                       "reference_id":  "HEF-300001",
+                       "calculation_date":  "2025-06-20",
+                       "var_95_1d":  "0.8500",
+                       "var_99_1d":  "1.2200",
+                       "cvar_95_1d":  "1.1000",
+                       "annualised_return":  "0.0623",
+                       "annualised_volatility":  "0.0850",
+                       "sharpe_ratio":  "0.4800",
+                       "sortino_ratio":  "0.6500",
+                       "max_drawdown":  "-0.0480",
+                       "beta":  "0.5800",
+                       "alpha":  "0.0090",
+                       "information_ratio":  "0.3100",
+                       "tracking_error":  "0.0220",
+                       "lookback_days":  252,
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "analytics.benchmarkreturn",
+        "pk":  1,
+        "fields":  {
+                       "benchmark_code":  "SPX",
+                       "benchmark_name":  "S\u0026P 500 Total Return",
+                       "return_date":  "2025-06-20",
+                       "daily_return":  "0.008200",
+                       "cumulative_return":  "0.125400",
+                       "index_level":  "5650.2500"
+                   }
+    },
+    {
+        "model":  "analytics.benchmarkreturn",
+        "pk":  2,
+        "fields":  {
+                       "benchmark_code":  "SPX",
+                       "benchmark_name":  "S\u0026P 500 Total Return",
+                       "return_date":  "2025-06-19",
+                       "daily_return":  "-0.003500",
+                       "cumulative_return":  "0.116200",
+                       "index_level":  "5604.2800"
+                   }
+    },
+    {
+        "model":  "analytics.benchmarkreturn",
+        "pk":  3,
+        "fields":  {
+                       "benchmark_code":  "AGG",
+                       "benchmark_name":  "Bloomberg US Aggregate Bond",
+                       "return_date":  "2025-06-20",
+                       "daily_return":  "0.001200",
+                       "cumulative_return":  "0.028500",
+                       "index_level":  "2145.8000"
+                   }
+    },
+    {
+        "model":  "analytics.benchmarkreturn",
+        "pk":  4,
+        "fields":  {
+                       "benchmark_code":  "AGG",
+                       "benchmark_name":  "Bloomberg US Aggregate Bond",
+                       "return_date":  "2025-06-19",
+                       "daily_return":  "0.000800",
+                       "cumulative_return":  "0.027300",
+                       "index_level":  "2143.2200"
+                   }
+    },
+    {
+        "model":  "analytics.benchmarkreturn",
+        "pk":  5,
+        "fields":  {
+                       "benchmark_code":  "NDX",
+                       "benchmark_name":  "NASDAQ 100 Total Return",
+                       "return_date":  "2025-06-20",
+                       "daily_return":  "0.012500",
+                       "cumulative_return":  "0.165800",
+                       "index_level":  "20450.7500"
+                   }
+    },
+    {
+        "model":  "analytics.benchmarkreturn",
+        "pk":  6,
+        "fields":  {
+                       "benchmark_code":  "NDX",
+                       "benchmark_name":  "NASDAQ 100 Total Return",
+                       "return_date":  "2025-06-19",
+                       "daily_return":  "-0.005200",
+                       "cumulative_return":  "0.152100",
+                       "index_level":  "20198.5000"
+                   }
+    },
+    {
+        "model":  "analytics.performanceattribution",
+        "pk":  1,
+        "fields":  {
+                       "account_number":  "WFT-100001",
+                       "period_start":  "2025-04-01",
+                       "period_end":  "2025-06-20",
+                       "asset_class":  "EQ",
+                       "allocation_effect":  "0.002500",
+                       "selection_effect":  "0.004200",
+                       "interaction_effect":  "0.000800",
+                       "total_effect":  "0.007500",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "analytics.performanceattribution",
+        "pk":  2,
+        "fields":  {
+                       "account_number":  "WFT-100001",
+                       "period_start":  "2025-04-01",
+                       "period_end":  "2025-06-20",
+                       "asset_class":  "FI",
+                       "allocation_effect":  "-0.001200",
+                       "selection_effect":  "0.000500",
+                       "interaction_effect":  "-0.000200",
+                       "total_effect":  "-0.000900",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "analytics.performanceattribution",
+        "pk":  3,
+        "fields":  {
+                       "account_number":  "WFT-100001",
+                       "period_start":  "2025-04-01",
+                       "period_end":  "2025-06-20",
+                       "asset_class":  "ALT",
+                       "allocation_effect":  "0.001800",
+                       "selection_effect":  "0.002100",
+                       "interaction_effect":  "0.000400",
+                       "total_effect":  "0.004300",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "analytics.performanceattribution",
+        "pk":  4,
+        "fields":  {
+                       "account_number":  "HEF-300001",
+                       "period_start":  "2025-04-01",
+                       "period_end":  "2025-06-20",
+                       "asset_class":  "EQ",
+                       "allocation_effect":  "-0.000800",
+                       "selection_effect":  "0.003100",
+                       "interaction_effect":  "0.000200",
+                       "total_effect":  "0.002500",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "etl_monitor.dagrun",
+        "pk":  1,
+        "fields":  {
+                       "dag_id":  "portfolio_etl_dag",
+                       "dag_run_id":  "scheduled__2025-06-20T18:00:00+00:00",
+                       "run_type":  "scheduled",
+                       "state":  "success",
+                       "execution_date":  "2025-06-20T18:00:00Z",
+                       "start_date":  "2025-06-20T18:00:15Z",
+                       "end_date":  "2025-06-20T18:12:45Z",
+                       "duration_seconds":  750.0,
+                       "conf":  {
+
+                                },
+                       "note":  "",
+                       "synced_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "etl_monitor.dagrun",
+        "pk":  2,
+        "fields":  {
+                       "dag_id":  "market_data_dag",
+                       "dag_run_id":  "scheduled__2025-06-20T17:00:00+00:00",
+                       "run_type":  "scheduled",
+                       "state":  "success",
+                       "execution_date":  "2025-06-20T17:00:00Z",
+                       "start_date":  "2025-06-20T17:00:10Z",
+                       "end_date":  "2025-06-20T17:08:30Z",
+                       "duration_seconds":  500.0,
+                       "conf":  {
+
+                                },
+                       "note":  "",
+                       "synced_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "etl_monitor.dagrun",
+        "pk":  3,
+        "fields":  {
+                       "dag_id":  "risk_report_dag",
+                       "dag_run_id":  "scheduled__2025-06-20T19:00:00+00:00",
+                       "run_type":  "scheduled",
+                       "state":  "success",
+                       "execution_date":  "2025-06-20T19:00:00Z",
+                       "start_date":  "2025-06-20T19:00:20Z",
+                       "end_date":  "2025-06-20T19:25:10Z",
+                       "duration_seconds":  1490.0,
+                       "conf":  {
+
+                                },
+                       "note":  "",
+                       "synced_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "etl_monitor.dagrun",
+        "pk":  4,
+        "fields":  {
+                       "dag_id":  "portfolio_etl_dag",
+                       "dag_run_id":  "scheduled__2025-06-19T18:00:00+00:00",
+                       "run_type":  "scheduled",
+                       "state":  "failed",
+                       "execution_date":  "2025-06-19T18:00:00Z",
+                       "start_date":  "2025-06-19T18:00:12Z",
+                       "end_date":  "2025-06-19T18:05:48Z",
+                       "duration_seconds":  336.0,
+                       "conf":  {
+
+                                },
+                       "note":  "Upstream data provider timeout — resolved on retry",
+                       "synced_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "etl_monitor.dagrun",
+        "pk":  5,
+        "fields":  {
+                       "dag_id":  "portfolio_etl_dag",
+                       "dag_run_id":  "manual__2025-06-19T18:30:00+00:00",
+                       "run_type":  "manual",
+                       "state":  "success",
+                       "execution_date":  "2025-06-19T18:30:00Z",
+                       "start_date":  "2025-06-19T18:30:08Z",
+                       "end_date":  "2025-06-19T18:42:20Z",
+                       "duration_seconds":  732.0,
+                       "conf":  {
+                                    "trigger":  "manual_retry"
+                                },
+                       "note":  "Manual retry after scheduled run failure",
+                       "synced_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "etl_monitor.taskinstance",
+        "pk":  1,
+        "fields":  {
+                       "dag_run":  1,
+                       "task_id":  "extract_positions",
+                       "state":  "success",
+                       "start_date":  "2025-06-20T18:00:15Z",
+                       "end_date":  "2025-06-20T18:03:45Z",
+                       "duration_seconds":  210.0,
+                       "try_number":  1,
+                       "log_url":  ""
+                   }
+    },
+    {
+        "model":  "etl_monitor.taskinstance",
+        "pk":  2,
+        "fields":  {
+                       "dag_run":  1,
+                       "task_id":  "transform_aum",
+                       "state":  "success",
+                       "start_date":  "2025-06-20T18:03:50Z",
+                       "end_date":  "2025-06-20T18:08:20Z",
+                       "duration_seconds":  270.0,
+                       "try_number":  1,
+                       "log_url":  ""
+                   }
+    },
+    {
+        "model":  "etl_monitor.taskinstance",
+        "pk":  3,
+        "fields":  {
+                       "dag_run":  1,
+                       "task_id":  "load_snapshot",
+                       "state":  "success",
+                       "start_date":  "2025-06-20T18:08:25Z",
+                       "end_date":  "2025-06-20T18:12:45Z",
+                       "duration_seconds":  260.0,
+                       "try_number":  1,
+                       "log_url":  ""
+                   }
+    },
+    {
+        "model":  "etl_monitor.taskinstance",
+        "pk":  4,
+        "fields":  {
+                       "dag_run":  4,
+                       "task_id":  "extract_positions",
+                       "state":  "failed",
+                       "start_date":  "2025-06-19T18:00:12Z",
+                       "end_date":  "2025-06-19T18:05:48Z",
+                       "duration_seconds":  336.0,
+                       "try_number":  2,
+                       "log_url":  ""
+                   }
+    },
+    {
+        "model":  "etl_monitor.pipelinealert",
+        "pk":  1,
+        "fields":  {
+                       "dag_run":  4,
+                       "dag_id":  "portfolio_etl_dag",
+                       "severity":  "CRITICAL",
+                       "message":  "DAG portfolio_etl_dag failed at task extract_positions: upstream data provider connection timeout after 300s. Manual retry succeeded at 18:42 UTC.",
+                       "acknowledged":  true,
+                       "acknowledged_by":  2,
+                       "acknowledged_at":  "2025-06-19T19:15:00Z",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "etl_monitor.pipelinealert",
+        "pk":  2,
+        "fields":  {
+                       "dag_run":  3,
+                       "dag_id":  "risk_report_dag",
+                       "severity":  "WARNING",
+                       "message":  "DAG risk_report_dag duration (24m 50s) exceeded SLA threshold of 20 minutes. Completed successfully but investigate performance.",
+                       "acknowledged":  false,
+                       "acknowledged_by":  null,
+                       "acknowledged_at":  null,
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    },
+    {
+        "model":  "etl_monitor.pipelinealert",
+        "pk":  3,
+        "fields":  {
+                       "dag_run":  null,
+                       "dag_id":  "market_data_dag",
+                       "severity":  "INFO",
+                       "message":  "Weekend data gap detected for 2025-06-21 and 2025-06-22 — expected, no action required.",
+                       "acknowledged":  true,
+                       "acknowledged_by":  3,
+                       "acknowledged_at":  "2025-06-20T09:00:00Z",
+                       "created_at":  "2025-06-20T12:00:00Z"
+                   }
+    }
+]

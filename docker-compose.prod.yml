@@ -1,0 +1,82 @@
+# ──────────────────────────────────────────────────────────────
+# XYZ Platform — Docker Compose (Production)
+# Overrides dev compose: multi-worker Gunicorn + Nginx TLS
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# ──────────────────────────────────────────────────────────────
+version: "3.9"
+
+services:
+
+  django:
+    build:
+      context: .
+      dockerfile: docker/django/Dockerfile
+      target: runtime
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+    command: >
+      gunicorn config.wsgi:application
+        --bind 0.0.0.0:8000
+        --workers 8
+        --worker-class gthread
+        --threads 4
+        --timeout 120
+        --keep-alive 5
+        --access-logfile -
+        --error-logfile -
+    ports: []    # Nginx handles external traffic — no direct port exposure
+    restart: always
+
+  nginx:
+    build:
+      context: docker/nginx
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - static_files:/app/staticfiles:ro
+      - media_files:/app/media:ro
+      - ./docker/nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - django
+    networks:
+      - xyz_net
+
+  celery-worker:
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+    command: celery -A config worker --loglevel=warning --concurrency=8
+
+  celery-beat:
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+    command: celery -A config beat --loglevel=warning --scheduler django_celery_beat.schedulers:DatabaseScheduler
+
+  db:
+    environment:
+      POSTGRES_DB:       ${DB_NAME}
+      POSTGRES_USER:     ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    command: >
+      postgres
+        -c max_connections=200
+        -c shared_buffers=512MB
+        -c effective_cache_size=2GB
+        -c wal_level=replica
+    ports: []  # Not exposed externally in production
+
+  redis:
+    command: redis-server --save 60 1 --requirepass ${REDIS_PASSWORD}
+    ports: []
+
+volumes:
+  postgres_data:
+  redis_data:
+  static_files:
+  media_files:
+  airflow_logs:
+
+networks:
+  xyz_net:

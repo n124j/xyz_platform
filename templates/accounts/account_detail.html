@@ -1,0 +1,189 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}Account {{ account.account_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .info-label { font-size:.8rem; color:#6c757d; margin-bottom:2px; }
+  .info-value { font-weight:600; }
+  #holdings-grid { height: 400px; }
+  #txn-grid { height: 400px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'accounts:client_list' %}">Clients</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'accounts:client_detail' account.client.pk %}">{{ account.client.name }}</a></li>
+    <li class="breadcrumb-item active">{{ account.account_number }}</li>
+  </ol>
+</nav>
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-wallet2 me-2 text-primary"></i>{{ account.account_number }}</h4>
+    <small class="text-muted">{{ account.get_account_type_display }} &mdash; {{ account.client.name }}</small>
+  </div>
+  <a href="/admin/accounts/account/{{ account.pk }}/change/" class="btn btn-outline-primary btn-sm">
+    <i class="bi bi-pencil me-1"></i>Edit
+  </a>
+</div>
+
+<!-- Account Summary Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="info-label">Market Value</div>
+        <div class="info-value fs-5 text-primary">${{ account.market_value|floatformat:0|intcomma }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="info-label">Cash Balance</div>
+        <div class="info-value fs-5">${{ account.cash_balance|floatformat:0|intcomma }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="info-label">YTD Return</div>
+        <div class="info-value fs-5 {% if account.ytd_return >= 0 %}text-success{% else %}text-danger{% endif %}">
+          {{ account.ytd_return|floatformat:2 }}%
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="info-label">Benchmark</div>
+        <div class="info-value">{{ account.benchmark }}</div>
+        <div class="info-label mt-2">Inception</div>
+        <div class="info-value">{{ account.inception_date }}</div>
+        <div class="info-label mt-2">Currency</div>
+        <div class="info-value">{{ account.base_currency }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Holdings Grid -->
+<h5 class="fw-bold mb-3"><i class="bi bi-pie-chart me-2 text-primary"></i>Holdings</h5>
+<div class="card mb-4">
+  <div class="card-body p-2">
+    <div id="holdings-grid" class="ag-theme-alpine"></div>
+  </div>
+</div>
+
+<!-- Transactions Grid -->
+<h5 class="fw-bold mb-3"><i class="bi bi-arrow-left-right me-2 text-primary"></i>Transactions</h5>
+<div class="card">
+  <div class="card-body p-2">
+    <div id="txn-grid" class="ag-theme-alpine"></div>
+  </div>
+</div>
+
+<script id="holdings-data" type="application/json">
+[{% for h in holdings %}
+  {
+    "ticker": "{{ h.ticker }}",
+    "security_name": "{{ h.security_name|escapejs }}",
+    "asset_class": "{{ h.get_asset_class_display }}",
+    "quantity": {{ h.quantity }},
+    "cost_basis": {{ h.cost_basis }},
+    "market_price": {{ h.market_price }},
+    "market_value": {{ h.market_value }},
+    "unrealized_pnl": {{ h.unrealized_pnl }},
+    "weight": {{ h.weight }}
+  }{% if not forloop.last %},{% endif %}
+{% endfor %}]
+</script>
+
+<script id="txn-data" type="application/json">
+[{% for t in transactions %}
+  {
+    "reference": "{{ t.reference_number|escapejs }}",
+    "type": "{{ t.get_transaction_type_display }}",
+    "ticker": "{{ t.ticker }}",
+    "trade_date": "{{ t.trade_date }}",
+    "settlement_date": "{{ t.settlement_date }}",
+    "quantity": {{ t.quantity|default:"null" }},
+    "price": {{ t.price|default:"null" }},
+    "gross_amount": {{ t.gross_amount }},
+    "net_amount": {{ t.net_amount }},
+    "currency": "{{ t.currency }}"
+  }{% if not forloop.last %},{% endif %}
+{% endfor %}]
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const fmt = new Intl.NumberFormat("en-US", { style:"currency", currency:"USD", maximumFractionDigits:0 });
+const fmtDec = new Intl.NumberFormat("en-US", { style:"currency", currency:"USD", minimumFractionDigits:2, maximumFractionDigits:2 });
+const fmtPct = v => (v * 100).toFixed(2) + "%";
+const fmtQty = new Intl.NumberFormat("en-US", { maximumFractionDigits:2 });
+
+// Holdings grid
+const holdingsData = JSON.parse(document.getElementById("holdings-data").textContent);
+agGrid.createGrid(document.querySelector("#holdings-grid"), {
+  columnDefs: [
+    { field:"ticker", headerName:"Ticker", width:100, pinned:"left", cellClass:"fw-semibold" },
+    { field:"security_name", headerName:"Security", flex:1, minWidth:180 },
+    { field:"asset_class", headerName:"Asset Class", width:160 },
+    { field:"quantity", headerName:"Qty", width:120, type:"numericColumn",
+      valueFormatter: p => fmtQty.format(p.value) },
+    { field:"market_price", headerName:"Price", width:120, type:"numericColumn",
+      valueFormatter: p => fmtDec.format(p.value) },
+    { field:"market_value", headerName:"Market Value", width:150, type:"numericColumn",
+      valueFormatter: p => fmt.format(p.value) },
+    { field:"unrealized_pnl", headerName:"Unrealized P&L", width:150, type:"numericColumn",
+      valueFormatter: p => fmtDec.format(p.value),
+      cellStyle: p => ({ color: p.value >= 0 ? "#198754" : "#dc3545" }) },
+    { field:"weight", headerName:"Weight", width:100, type:"numericColumn",
+      valueFormatter: p => fmtPct(p.value) },
+  ],
+  rowData: holdingsData,
+  defaultColDef: { sortable:true, filter:true, resizable:true },
+  pagination: true,
+  paginationPageSize: 20,
+  animateRows: true,
+  theme: "legacy",
+});
+
+// Transactions grid
+const txnData = JSON.parse(document.getElementById("txn-data").textContent);
+agGrid.createGrid(document.querySelector("#txn-grid"), {
+  columnDefs: [
+    { field:"reference", headerName:"Reference", width:160 },
+    { field:"type", headerName:"Type", width:140 },
+    { field:"ticker", headerName:"Ticker", width:100 },
+    { field:"trade_date", headerName:"Trade Date", width:130 },
+    { field:"settlement_date", headerName:"Settlement", width:130 },
+    { field:"quantity", headerName:"Qty", width:100, type:"numericColumn",
+      valueFormatter: p => p.value != null ? fmtQty.format(p.value) : "—" },
+    { field:"price", headerName:"Price", width:110, type:"numericColumn",
+      valueFormatter: p => p.value != null ? fmtDec.format(p.value) : "—" },
+    { field:"gross_amount", headerName:"Gross", width:140, type:"numericColumn",
+      valueFormatter: p => fmt.format(p.value) },
+    { field:"net_amount", headerName:"Net", width:140, type:"numericColumn",
+      valueFormatter: p => fmt.format(p.value) },
+    { field:"currency", headerName:"Ccy", width:80 },
+  ],
+  rowData: txnData,
+  defaultColDef: { sortable:true, filter:true, resizable:true },
+  pagination: true,
+  paginationPageSize: 20,
+  animateRows: true,
+  theme: "legacy",
+});
+</script>
+{% endblock %}

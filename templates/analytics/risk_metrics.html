@@ -1,0 +1,154 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}Risk Metrics{% endblock %}
+
+{% block extra_css %}
+<style>
+  #risk-grid { height: 520px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'analytics:dashboard' %}">Analytics</a></li>
+    <li class="breadcrumb-item active">Risk Metrics</li>
+  </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-shield-check me-2 text-primary"></i>Risk Metrics</h4>
+    <small class="text-muted">{{ risk_metrics.paginator.count }} metric record{{ risk_metrics.paginator.count|pluralize }}</small>
+  </div>
+  <a href="{% url 'analytics:dashboard' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i>Dashboard
+  </a>
+</div>
+
+<!-- Filter Bar -->
+<div class="card mb-3 p-3">
+  <form method="get" class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label small text-muted mb-1">Scope</label>
+      <select name="scope" class="form-select form-select-sm">
+        <option value="">All Scopes</option>
+        <option value="ACCOUNT" {% if request.GET.scope == "ACCOUNT" %}selected{% endif %}>Account</option>
+        <option value="PORTFOLIO" {% if request.GET.scope == "PORTFOLIO" %}selected{% endif %}>Portfolio</option>
+        <option value="SECURITY" {% if request.GET.scope == "SECURITY" %}selected{% endif %}>Security</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
+    </div>
+    <div class="col-md-4"></div>
+    <div class="col-md-3 text-end">
+      <input type="text" id="grid-filter" class="form-control form-control-sm" placeholder="Quick grid filter…" />
+    </div>
+  </form>
+</div>
+
+<!-- AG Grid -->
+<div class="card">
+  <div class="card-body p-2">
+    <div id="risk-grid" class="ag-theme-alpine"></div>
+  </div>
+</div>
+
+<script id="risk-data" type="application/json">
+[{% for m in risk_metrics %}
+  {
+    "scope": "{{ m.get_scope_display }}",
+    "reference_id": "{{ m.reference_id|escapejs }}",
+    "calculation_date": "{{ m.calculation_date }}",
+    "lookback_days": {{ m.lookback_days }},
+    "var_95_1d": {{ m.var_95_1d|default:"null" }},
+    "var_99_1d": {{ m.var_99_1d|default:"null" }},
+    "cvar_95_1d": {{ m.cvar_95_1d|default:"null" }},
+    "annualised_return": {{ m.annualised_return|default:"null" }},
+    "annualised_volatility": {{ m.annualised_volatility|default:"null" }},
+    "sharpe_ratio": {{ m.sharpe_ratio|default:"null" }},
+    "sortino_ratio": {{ m.sortino_ratio|default:"null" }},
+    "max_drawdown": {{ m.max_drawdown|default:"null" }},
+    "beta": {{ m.beta|default:"null" }},
+    "alpha": {{ m.alpha|default:"null" }},
+    "information_ratio": {{ m.information_ratio|default:"null" }},
+    "tracking_error": {{ m.tracking_error|default:"null" }}
+  }{% if not forloop.last %},{% endif %}
+{% endfor %}]
+</script>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<nav class="mt-3">
+  <ul class="pagination pagination-sm justify-content-center">
+    {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.scope %}&scope={{ request.GET.scope }}{% endif %}">&laquo;</a></li>
+    {% endif %}
+    <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+    {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.scope %}&scope={{ request.GET.scope }}{% endif %}">&raquo;</a></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const riskData = JSON.parse(document.getElementById("risk-data").textContent);
+const fmtPct = v => v != null ? (v * 100).toFixed(2) + "%" : "—";
+const fmtDec = v => v != null ? Number(v).toFixed(4) : "—";
+
+const colDefs = [
+  { field: "scope", headerName: "Scope", width: 110, pinned: "left" },
+  { field: "reference_id", headerName: "Reference", width: 150, pinned: "left", cellClass: "fw-semibold" },
+  { field: "calculation_date", headerName: "Calc Date", width: 130 },
+  { field: "lookback_days", headerName: "Lookback", width: 100 },
+  { field: "var_95_1d", headerName: "VaR 95%", width: 110, type: "numericColumn",
+    valueFormatter: p => fmtPct(p.value),
+    cellStyle: p => p.value != null ? { color: "#dc3545" } : {} },
+  { field: "var_99_1d", headerName: "VaR 99%", width: 110, type: "numericColumn",
+    valueFormatter: p => fmtPct(p.value),
+    cellStyle: p => p.value != null ? { color: "#dc3545" } : {} },
+  { field: "cvar_95_1d", headerName: "CVaR 95%", width: 110, type: "numericColumn",
+    valueFormatter: p => fmtPct(p.value) },
+  { field: "annualised_return", headerName: "Ann. Return", width: 120, type: "numericColumn",
+    valueFormatter: p => fmtPct(p.value),
+    cellStyle: p => p.value != null ? { color: p.value >= 0 ? "#198754" : "#dc3545" } : {} },
+  { field: "annualised_volatility", headerName: "Ann. Vol.", width: 110, type: "numericColumn",
+    valueFormatter: p => fmtPct(p.value) },
+  { field: "sharpe_ratio", headerName: "Sharpe", width: 100, type: "numericColumn",
+    valueFormatter: p => fmtDec(p.value) },
+  { field: "sortino_ratio", headerName: "Sortino", width: 100, type: "numericColumn",
+    valueFormatter: p => fmtDec(p.value) },
+  { field: "max_drawdown", headerName: "Max DD", width: 110, type: "numericColumn",
+    valueFormatter: p => fmtPct(p.value),
+    cellStyle: p => p.value != null ? { color: "#dc3545" } : {} },
+  { field: "beta", headerName: "Beta", width: 90, type: "numericColumn",
+    valueFormatter: p => fmtDec(p.value) },
+  { field: "alpha", headerName: "Alpha", width: 90, type: "numericColumn",
+    valueFormatter: p => fmtDec(p.value) },
+  { field: "information_ratio", headerName: "Info Ratio", width: 110, type: "numericColumn",
+    valueFormatter: p => fmtDec(p.value) },
+  { field: "tracking_error", headerName: "Track Error", width: 110, type: "numericColumn",
+    valueFormatter: p => fmtPct(p.value) },
+];
+
+const grid = agGrid.createGrid(document.querySelector("#risk-grid"), {
+  columnDefs: colDefs,
+  rowData: riskData,
+  defaultColDef: { sortable: true, filter: true, resizable: true },
+  pagination: true,
+  paginationPageSize: 20,
+  animateRows: true,
+  theme: "legacy",
+});
+
+document.getElementById("grid-filter").addEventListener("input", e => {
+  grid.setGridOption("quickFilterText", e.target.value);
+});
+</script>
+{% endblock %}

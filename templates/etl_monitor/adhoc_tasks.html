@@ -1,0 +1,316 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}Ad-Hoc Task Runner{% endblock %}
+
+{% block extra_css %}
+<style>
+  .task-card {
+    border-left: 4px solid #6c757d;
+    transition: box-shadow .15s, border-left-color .15s;
+    cursor: pointer;
+  }
+  .task-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); border-left-color: #0d6efd; }
+  .task-card.selected { border-left-color: #0d6efd; background: #f0f7ff; }
+  .category-badge { font-size: .7rem; padding: 2px 8px; }
+  .status-PENDING  { color: #6c757d; }
+  .status-STARTED  { color: #0d6efd; }
+  .status-SUCCESS  { color: #198754; }
+  .status-FAILURE  { color: #dc3545; }
+  .status-REVOKED  { color: #fd7e14; }
+  .param-section { display: none; }
+  .param-section.active { display: block; }
+  .pulse-dot { animation: pulse 1.2s infinite; display: inline-block; }
+  @keyframes pulse { 0%,100%{ opacity:1; } 50%{ opacity:.3; } }
+  #exec-history { max-height: 500px; overflow-y: auto; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-terminal me-2 text-primary"></i>Ad-Hoc Task Runner</h4>
+    <small class="text-muted">Execute Celery tasks on demand — results tracked below</small>
+  </div>
+  <a href="{% url 'etl_monitor:dashboard' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Back to ETL Monitor
+  </a>
+</div>
+
+<div class="row g-4">
+  <!-- Left: Task Picker -->
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header fw-semibold">
+        <i class="bi bi-list-task me-1"></i>Available Tasks
+      </div>
+      <div class="card-body p-2">
+        {% for category, tasks in categories.items %}
+        <div class="mb-3">
+          <h6 class="text-muted text-uppercase small fw-bold px-2 mb-2">
+            <i class="bi bi-folder me-1"></i>{{ category }}
+          </h6>
+          {% for task in tasks %}
+          <div class="task-card card mb-2 p-3" data-task-key="{{ task.key }}" onclick="selectTask(this, '{{ task.key }}')">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h6 class="mb-1 fw-semibold">{{ task.display_name }}</h6>
+                <small class="text-muted">{{ task.description }}</small>
+              </div>
+              <span class="badge bg-secondary category-badge">{{ task.category }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Execution Form + History -->
+  <div class="col-lg-7">
+    <!-- Run Task Form -->
+    <div class="card mb-4">
+      <div class="card-header fw-semibold">
+        <i class="bi bi-play-circle me-1"></i>Run Task
+      </div>
+      <div class="card-body">
+        <form method="post" id="taskForm">
+          {% csrf_token %}
+          <input type="hidden" name="task_key" id="selectedTaskKey" value="">
+
+          <div id="noTaskSelected" class="text-center text-muted py-4">
+            <i class="bi bi-arrow-left-circle fs-1 d-block mb-2"></i>
+            Select a task from the left panel to configure and run it.
+          </div>
+
+          <div id="taskConfig" style="display:none">
+            <div class="alert alert-info d-flex align-items-start gap-2 mb-3">
+              <i class="bi bi-info-circle mt-1"></i>
+              <div>
+                <strong id="selectedTaskName"></strong>
+                <p class="mb-0 small" id="selectedTaskDesc"></p>
+              </div>
+            </div>
+
+            <!-- Dynamic Parameters -->
+            {% for category, tasks in categories.items %}
+              {% for task in tasks %}
+              <div class="param-section" id="params-{{ task.key }}">
+                {% if task.parameters %}
+                <h6 class="fw-semibold mb-3"><i class="bi bi-sliders me-1"></i>Parameters</h6>
+                  {% for pname, pdef in task.parameters.items %}
+                  <div class="mb-3">
+                    <label class="form-label fw-medium" for="param_{{ pname }}_{{ task.key }}">
+                      {{ pdef.label }}
+                      {% if pdef.required %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+                    {% if pdef.type == "select" %}
+                    <select class="form-select" name="param_{{ pname }}" id="param_{{ pname }}_{{ task.key }}">
+                      {% for choice in pdef.choices %}
+                      <option value="{{ choice }}">{{ choice }}</option>
+                      {% endfor %}
+                    </select>
+                    {% elif pdef.type == "number" %}
+                    <input type="number" class="form-control" name="param_{{ pname }}" id="param_{{ pname }}_{{ task.key }}"
+                           value="{{ pdef.default|default:'' }}" {% if pdef.required %}required{% endif %}>
+                    {% else %}
+                    <input type="text" class="form-control" name="param_{{ pname }}" id="param_{{ pname }}_{{ task.key }}"
+                           value="{{ pdef.default|default:'' }}" {% if pdef.required %}required{% endif %}>
+                    {% endif %}
+                  </div>
+                  {% endfor %}
+                {% else %}
+                <p class="text-muted mb-0"><i class="bi bi-check-circle me-1"></i>This task requires no parameters.</p>
+                {% endif %}
+              </div>
+              {% endfor %}
+            {% endfor %}
+
+            <hr>
+            <button type="submit" class="btn btn-primary" id="runBtn">
+              <i class="bi bi-play-fill me-1"></i>Run Task
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Execution History -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold"><i class="bi bi-clock-history me-1"></i>Execution History</span>
+        <span class="badge bg-secondary">{{ recent_executions|length }} recent</span>
+      </div>
+      <div class="card-body p-0" id="exec-history">
+        <table class="table table-hover table-sm mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Task</th>
+              <th>Status</th>
+              <th>Triggered By</th>
+              <th>Time</th>
+              <th>Duration</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for exec in recent_executions %}
+            <tr>
+              <td>
+                <strong>{{ exec.display_name }}</strong>
+                {% if exec.parameters %}<br><code class="small text-muted">{{ exec.parameters }}</code>{% endif %}
+              </td>
+              <td>
+                <span class="fw-bold status-{{ exec.status }}">
+                  {% if exec.status == "STARTED" %}<span class="pulse-dot">&#9679;</span> {% endif %}
+                  {{ exec.status }}
+                </span>
+              </td>
+              <td>{{ exec.triggered_by|default:"—" }}</td>
+              <td><small>{{ exec.created_at|date:"M d, H:i" }}</small></td>
+              <td>{{ exec.duration_display }}</td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary" onclick="showDetail({{ exec.pk }})" title="View details">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-muted py-4">No tasks have been executed yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>Task Execution Detail</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="detailLoading" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+        <div id="detailContent" style="display:none">
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label text-muted small">Task</label>
+              <div class="fw-semibold" id="detailName"></div>
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted small">Status</label>
+              <div class="fw-bold" id="detailStatus"></div>
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted small">Triggered By</label>
+              <div id="detailUser"></div>
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted small">Duration</label>
+              <div id="detailDuration"></div>
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted small">Started</label>
+              <div id="detailStarted"></div>
+            </div>
+            <div class="col-6">
+              <label class="form-label text-muted small">Completed</label>
+              <div id="detailCompleted"></div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-muted small">Parameters</label>
+            <pre class="bg-light p-3 rounded small" id="detailParams"></pre>
+          </div>
+          <div id="detailResultSection">
+            <label class="form-label text-muted small">Result</label>
+            <pre class="bg-light p-3 rounded small" id="detailResult"></pre>
+          </div>
+          <div id="detailErrorSection" style="display:none">
+            <label class="form-label text-muted small">Error</label>
+            <pre class="bg-danger bg-opacity-10 text-danger p-3 rounded small" id="detailError"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentTaskKey = null;
+
+function selectTask(el, key) {
+  document.querySelectorAll('.task-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  currentTaskKey = key;
+
+  document.getElementById('selectedTaskKey').value = key;
+  document.getElementById('noTaskSelected').style.display = 'none';
+  document.getElementById('taskConfig').style.display = 'block';
+
+  const name = el.querySelector('h6').textContent;
+  const desc = el.querySelector('small').textContent;
+  document.getElementById('selectedTaskName').textContent = name;
+  document.getElementById('selectedTaskDesc').textContent = desc;
+
+  document.querySelectorAll('.param-section').forEach(s => s.classList.remove('active'));
+  const paramSection = document.getElementById('params-' + key);
+  if (paramSection) paramSection.classList.add('active');
+}
+
+function showDetail(pk) {
+  const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+  document.getElementById('detailLoading').style.display = 'block';
+  document.getElementById('detailContent').style.display = 'none';
+  modal.show();
+
+  fetch(`/etl/tasks/${pk}/status/`)
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('detailName').textContent = data.display_name;
+      document.getElementById('detailStatus').textContent = data.status;
+      document.getElementById('detailStatus').className = 'fw-bold status-' + data.status;
+      document.getElementById('detailUser').textContent = data.triggered_by || '—';
+      document.getElementById('detailDuration').textContent = data.duration;
+      document.getElementById('detailStarted').textContent = data.started_at || '—';
+      document.getElementById('detailCompleted').textContent = data.completed_at || '—';
+      document.getElementById('detailParams').textContent = JSON.stringify(data.parameters, null, 2);
+
+      if (data.result) {
+        document.getElementById('detailResultSection').style.display = 'block';
+        document.getElementById('detailResult').textContent = JSON.stringify(data.result, null, 2);
+      } else {
+        document.getElementById('detailResultSection').style.display = 'none';
+      }
+
+      if (data.error_message) {
+        document.getElementById('detailErrorSection').style.display = 'block';
+        document.getElementById('detailError').textContent = data.error_message;
+      } else {
+        document.getElementById('detailErrorSection').style.display = 'none';
+      }
+
+      document.getElementById('detailLoading').style.display = 'none';
+      document.getElementById('detailContent').style.display = 'block';
+    });
+}
+
+document.getElementById('taskForm').addEventListener('submit', function(e) {
+  if (!currentTaskKey) {
+    e.preventDefault();
+    alert('Please select a task first.');
+  }
+});
+</script>
+{% endblock %}

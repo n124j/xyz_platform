@@ -1,0 +1,216 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}{{ client.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .info-label { font-size:.8rem; color:#6c757d; margin-bottom:2px; }
+  .info-value { font-weight:600; }
+  #accounts-grid { height: 300px; }
+  #txn-grid { height: 400px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'accounts:client_list' %}">Clients</a></li>
+    <li class="breadcrumb-item active">{{ client.name }}</li>
+  </ol>
+</nav>
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-person-circle me-2 text-primary"></i>{{ client.name }}</h4>
+    <small class="text-muted">{{ client.client_id }} &mdash;
+      <span class="badge bg-{% if client.tier == 'UHNW' %}danger{% elif client.tier == 'HNW' %}primary{% elif client.tier == 'MA' %}info{% elif client.tier == 'INST' %}warning{% else %}secondary{% endif %}">
+        {{ client.get_tier_display }}
+      </span>
+    </small>
+  </div>
+  <a href="/admin/accounts/client/{{ client.pk }}/change/" class="btn btn-outline-primary btn-sm">
+    <i class="bi bi-pencil me-1"></i>Edit
+  </a>
+</div>
+
+<!-- Client Info Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="info-label">Total AUM</div>
+        <div class="info-value fs-5 text-primary">${{ client.total_aum|floatformat:0|intcomma }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="info-label">Active Accounts</div>
+        <div class="info-value fs-5">{{ accounts|length }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="info-label">Risk Profile</div>
+        <div class="info-value">{{ client.get_risk_profile_display }}</div>
+        <div class="info-label mt-2">KYC Status</div>
+        <div class="info-value">
+          {% if client.kyc_verified %}
+            <i class="bi bi-check-circle-fill text-success"></i> Verified
+          {% else %}
+            <i class="bi bi-x-circle-fill text-danger"></i> Pending
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <div class="info-label">Relationship Manager</div>
+        <div class="info-value">{{ client.relationship_manager.get_full_name|default:"Unassigned" }}</div>
+        <div class="info-label mt-2">Onboarded</div>
+        <div class="info-value">{{ client.onboarded_date }}</div>
+        <div class="info-label mt-2">Country</div>
+        <div class="info-value">{{ client.country }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if client.email or client.phone %}
+<div class="card mb-4">
+  <div class="card-body py-2">
+    <div class="row">
+      {% if client.email %}
+      <div class="col-md-6">
+        <span class="info-label">Email</span>
+        <span class="info-value ms-2">{{ client.email }}</span>
+      </div>
+      {% endif %}
+      {% if client.phone %}
+      <div class="col-md-6">
+        <span class="info-label">Phone</span>
+        <span class="info-value ms-2">{{ client.phone }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if client.notes %}
+<div class="card mb-4">
+  <div class="card-body py-2">
+    <span class="info-label">Notes</span>
+    <p class="mb-0 mt-1">{{ client.notes }}</p>
+  </div>
+</div>
+{% endif %}
+
+<!-- Accounts Grid -->
+<h5 class="fw-bold mb-3"><i class="bi bi-wallet2 me-2 text-primary"></i>Accounts</h5>
+<div class="card mb-4">
+  <div class="card-body p-2">
+    <div id="accounts-grid" class="ag-theme-alpine"></div>
+  </div>
+</div>
+
+<!-- Recent Transactions Grid -->
+<h5 class="fw-bold mb-3"><i class="bi bi-arrow-left-right me-2 text-primary"></i>Recent Transactions</h5>
+<div class="card">
+  <div class="card-body p-2">
+    <div id="txn-grid" class="ag-theme-alpine"></div>
+  </div>
+</div>
+
+<script id="accounts-data" type="application/json">
+[{% for a in accounts %}
+  {
+    "account_number": "{{ a.account_number }}",
+    "account_type": "{{ a.get_account_type_display }}",
+    "market_value": {{ a.market_value|default:"0" }},
+    "cash_balance": {{ a.cash_balance|default:"0" }},
+    "ytd_return": {{ a.ytd_return|default:"0" }},
+    "benchmark": "{{ a.benchmark|escapejs }}",
+    "inception_date": "{{ a.inception_date }}",
+    "detail_url": "{% url 'accounts:account_detail' a.account_number %}"
+  }{% if not forloop.last %},{% endif %}
+{% endfor %}]
+</script>
+
+<script id="txn-data" type="application/json">
+[{% for t in recent_transactions %}
+  {
+    "reference": "{{ t.reference_number|escapejs }}",
+    "account": "{{ t.account.account_number }}",
+    "type": "{{ t.get_transaction_type_display }}",
+    "ticker": "{{ t.ticker }}",
+    "trade_date": "{{ t.trade_date }}",
+    "gross_amount": {{ t.gross_amount }},
+    "net_amount": {{ t.net_amount }},
+    "currency": "{{ t.currency }}"
+  }{% if not forloop.last %},{% endif %}
+{% endfor %}]
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const fmt = new Intl.NumberFormat("en-US", { style:"currency", currency:"USD", maximumFractionDigits:0 });
+const fmtPct = v => (v * 100).toFixed(2) + "%";
+
+// Accounts grid
+const acctData = JSON.parse(document.getElementById("accounts-data").textContent);
+agGrid.createGrid(document.querySelector("#accounts-grid"), {
+  columnDefs: [
+    { field:"account_number", headerName:"Account #", width:140, pinned:"left",
+      cellRenderer: p => `<a href="${p.data.detail_url}" class="text-decoration-none fw-semibold">${p.value}</a>` },
+    { field:"account_type", headerName:"Type", width:180 },
+    { field:"market_value", headerName:"Market Value", width:160, type:"numericColumn",
+      valueFormatter: p => fmt.format(p.value) },
+    { field:"cash_balance", headerName:"Cash Balance", width:150, type:"numericColumn",
+      valueFormatter: p => fmt.format(p.value) },
+    { field:"ytd_return", headerName:"YTD Return", width:130, type:"numericColumn",
+      valueFormatter: p => fmtPct(p.value),
+      cellStyle: p => ({ color: p.value >= 0 ? "#198754" : "#dc3545" }) },
+    { field:"benchmark", headerName:"Benchmark", width:140 },
+    { field:"inception_date", headerName:"Inception", width:130 },
+  ],
+  rowData: acctData,
+  defaultColDef: { sortable:true, filter:true, resizable:true },
+  domLayout: acctData.length <= 5 ? "autoHeight" : undefined,
+  animateRows: true,
+  theme: "legacy",
+});
+
+// Transactions grid
+const txnData = JSON.parse(document.getElementById("txn-data").textContent);
+agGrid.createGrid(document.querySelector("#txn-grid"), {
+  columnDefs: [
+    { field:"reference", headerName:"Reference", width:160 },
+    { field:"account", headerName:"Account", width:130 },
+    { field:"type", headerName:"Type", width:140 },
+    { field:"ticker", headerName:"Ticker", width:100 },
+    { field:"trade_date", headerName:"Trade Date", width:130 },
+    { field:"gross_amount", headerName:"Gross Amount", width:150, type:"numericColumn",
+      valueFormatter: p => fmt.format(p.value) },
+    { field:"net_amount", headerName:"Net Amount", width:140, type:"numericColumn",
+      valueFormatter: p => fmt.format(p.value) },
+    { field:"currency", headerName:"Ccy", width:80 },
+  ],
+  rowData: txnData,
+  defaultColDef: { sortable:true, filter:true, resizable:true },
+  pagination: true,
+  paginationPageSize: 10,
+  animateRows: true,
+  theme: "legacy",
+});
+</script>
+{% endblock %}

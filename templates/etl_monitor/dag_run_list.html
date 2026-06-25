@@ -1,0 +1,136 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+
+{% block title %}DAG Run History{% endblock %}
+
+{% block extra_css %}
+<style>
+  #runs-grid { height: 520px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a href="{% url 'etl_monitor:dashboard' %}">ETL Monitor</a></li>
+    <li class="breadcrumb-item active">Run History</li>
+  </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-primary"></i>DAG Run History</h4>
+    <small class="text-muted">{{ dag_runs.paginator.count }} total run{{ dag_runs.paginator.count|pluralize }}</small>
+  </div>
+  <a href="{% url 'etl_monitor:dashboard' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i>Dashboard
+  </a>
+</div>
+
+<!-- Filter Bar -->
+<div class="card mb-3 p-3">
+  <form method="get" class="row g-2 align-items-end">
+    <div class="col-md-4">
+      <label class="form-label small text-muted mb-1">DAG ID</label>
+      <select name="dag_id" class="form-select form-select-sm">
+        <option value="">All DAGs</option>
+        {% for did in dag_ids %}
+          <option value="{{ did }}" {% if request.GET.dag_id == did %}selected{% endif %}>{{ did }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label small text-muted mb-1">State</label>
+      <select name="state" class="form-select form-select-sm">
+        <option value="">All States</option>
+        {% for val, label in states %}
+          <option value="{{ val }}" {% if request.GET.state == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
+    </div>
+    <div class="col-md-3 text-end">
+      <input type="text" id="grid-filter" class="form-control form-control-sm" placeholder="Quick grid filter…" />
+    </div>
+  </form>
+</div>
+
+<!-- AG Grid -->
+<div class="card">
+  <div class="card-body p-2">
+    <div id="runs-grid" class="ag-theme-alpine"></div>
+  </div>
+</div>
+
+<script id="runs-data" type="application/json">
+[{% for run in dag_runs %}
+  {
+    "dag_id": "{{ run.dag_id|escapejs }}",
+    "dag_run_id": "{{ run.dag_run_id|escapejs }}",
+    "state": "{{ run.state }}",
+    "execution_date": "{{ run.execution_date|date:'Y-m-d H:i:s' }}",
+    "start_date": "{{ run.start_date|date:'Y-m-d H:i:s'|default:'' }}",
+    "end_date": "{{ run.end_date|date:'Y-m-d H:i:s'|default:'' }}",
+    "duration": "{{ run.duration_display }}",
+    "duration_seconds": {{ run.duration_seconds|default:"null" }},
+    "run_type": "{{ run.run_type }}",
+    "note": "{{ run.note|escapejs }}"
+  }{% if not forloop.last %},{% endif %}
+{% endfor %}]
+</script>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<nav class="mt-3">
+  <ul class="pagination pagination-sm justify-content-center">
+    {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.dag_id %}&dag_id={{ request.GET.dag_id }}{% endif %}{% if request.GET.state %}&state={{ request.GET.state }}{% endif %}">&laquo;</a></li>
+    {% endif %}
+    <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+    {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.dag_id %}&dag_id={{ request.GET.dag_id }}{% endif %}{% if request.GET.state %}&state={{ request.GET.state }}{% endif %}">&raquo;</a></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const runsData = JSON.parse(document.getElementById("runs-data").textContent);
+
+const colDefs = [
+  { field: "dag_id", headerName: "DAG ID", flex: 1, minWidth: 180, pinned: "left", cellClass: "fw-semibold" },
+  { field: "dag_run_id", headerName: "Run ID", width: 220 },
+  { field: "state", headerName: "State", width: 110,
+    cellRenderer: p => {
+      const c = { success:"success", failed:"danger", running:"primary", queued:"warning", skipped:"secondary" };
+      return `<span class="badge bg-${c[p.value]||'secondary'}">${p.value.toUpperCase()}</span>`;
+    }},
+  { field: "execution_date", headerName: "Execution Date", width: 180 },
+  { field: "start_date", headerName: "Start", width: 180 },
+  { field: "end_date", headerName: "End", width: 180 },
+  { field: "duration", headerName: "Duration", width: 110 },
+  { field: "run_type", headerName: "Type", width: 110,
+    valueFormatter: p => p.value ? p.value.charAt(0).toUpperCase() + p.value.slice(1) : "" },
+  { field: "note", headerName: "Note", flex: 1, minWidth: 150 },
+];
+
+const grid = agGrid.createGrid(document.querySelector("#runs-grid"), {
+  columnDefs: colDefs,
+  rowData: runsData,
+  defaultColDef: { sortable: true, filter: true, resizable: true },
+  pagination: true,
+  paginationPageSize: 25,
+  animateRows: true,
+  theme: "legacy",
+});
+
+document.getElementById("grid-filter").addEventListener("input", e => {
+  grid.setGridOption("quickFilterText", e.target.value);
+});
+</script>
+{% endblock %}
