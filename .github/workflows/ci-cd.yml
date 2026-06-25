@@ -27,6 +27,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
+          cache-dependency-path: requirements/*.txt
 
       - name: Install linting tools
         run: pip install black flake8 isort
@@ -93,6 +94,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
+          cache-dependency-path: requirements/*.txt
 
       - name: Install dependencies
         run: pip install -r requirements/development.txt
