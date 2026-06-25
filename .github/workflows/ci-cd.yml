@@ -51,9 +51,9 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: ${{ vars.CI_DB_NAME }}
-          POSTGRES_USER: ${{ secrets.CI_DB_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.CI_DB_PASSWORD }}
+          POSTGRES_DB: xyz_platform_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -73,18 +73,18 @@ jobs:
           - 6379:6379
 
     env:
-      SECRET_KEY: ${{ secrets.CI_SECRET_KEY }}
+      SECRET_KEY: ci-test-secret-key-not-for-production
       DEBUG: "True"
-      DB_NAME: ${{ vars.CI_DB_NAME }}
-      DB_USER: ${{ secrets.CI_DB_USER }}
-      DB_PASSWORD: ${{ secrets.CI_DB_PASSWORD }}
+      DB_NAME: xyz_platform_test
+      DB_USER: postgres
+      DB_PASSWORD: postgres
       DB_HOST: localhost
       DB_PORT: "5432"
       REDIS_URL: redis://localhost:6379/0
       DJANGO_SETTINGS_MODULE: config.settings.development
       AIRFLOW_API_URL: http://localhost:8080/api/v1
-      AIRFLOW_API_USER: ${{ secrets.CI_AIRFLOW_USER }}
-      AIRFLOW_API_PASSWORD: ${{ secrets.CI_AIRFLOW_PASSWORD }}
+      AIRFLOW_API_USER: airflow
+      AIRFLOW_API_PASSWORD: airflow
 
     steps:
       - uses: actions/checkout@v4
