@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """XYZ Platform — Django management utility."""
+
 import os
 import sys
 
